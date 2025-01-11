@@ -1,5 +1,5 @@
-function Core.Notify(source, text, duration)
-    TriggerClientEvent("dh_lib:client:notify", source, text, duration)
+function Core.Notify(source, text, duration, notificationType)
+    TriggerClientEvent("dh_lib:client:notify", source, text, duration, notificationType)
 end
 function Core.DumpTable(table, nb)
     if nb == nil then 

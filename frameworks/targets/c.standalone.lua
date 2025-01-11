@@ -7,7 +7,7 @@ local threadStarted = false
 local cachedPed = {
     ped = nil,
     coords = nil
-}
+} 
 
 CreateThread(function() 
     Core.AddModelToTarget = function(model, data)
@@ -31,14 +31,14 @@ CreateThread(function()
         })
     end
 
-    Core.AddCoordsToTarget(vec3(2832.7373, 2796.4502, 57.4704), {
-        radius = 2.0,
-        event = "test:coords",
-        label = "Test coords",
-        handler = function()
-            return true
-        end
-    })
+    -- Core.AddCoordsToTarget(vec3(2832.7373, 2796.4502, 57.4704), {
+    --     radius = 2.0,
+    --     event = "test:coords",
+    --     label = "Test coords",
+    --     handler = function()
+    --         return true
+    --     end
+    -- })
 
     while true do
         cachedPed.ped = PlayerPedId()

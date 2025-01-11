@@ -117,6 +117,8 @@ function Core.SpawnVehicle(modelName, coords, heading, cb, _networked)
         SetVehicleIsStolen(vehicle, false)
         SetVehicleIsWanted(vehicle, false)
         SetVehRadioStation(vehicle, 'OFF')
+        local plate = GetVehicleNumberPlateText(vehicle) 
+        -- function to add keys
         RequestCollisionAtCoord(coords.x, coords.y, coords.z)
 		while not HasCollisionLoadedAroundEntity(vehicle) do
 			RequestCollisionAtCoord(coords.x, coords.y, coords.z)
@@ -150,6 +152,10 @@ function Core.AddBlip(coords, sprite, color, scale, name)
     AddTextComponentString(name)
     EndTextCommandSetBlipName(blip)
     return blip
+end
+
+function Core.RemoveBlip(blip)
+    RemoveBlip(blip)
 end
 
 function Core.GetClosestPlayers(distance)
@@ -204,10 +210,10 @@ RegisterNetEvent("dh_lib:client:notify", function(text, duration, notificationTy
     Core.Notify(text, duration, notificationType)
 end)
 
-function Core.ShowStaticMessage(text)
+function Core.ShowStaticMessage(text, position)
     if not CustomUi.ShowStaticMessage(text) then
-        -- placement: top-left, top-right, bottom-left, bottom-right, top-center, bottom-center
-        local placement = "top-left"
+        -- placement: top-left, top-right, bottom-left, bottom-right
+        local placement = position or "top-left"
         SendNUIMessage({
             type = "static",
             text = text,
@@ -217,10 +223,10 @@ function Core.ShowStaticMessage(text)
     end
 end
 
-function Core.ShowControlButtons(text)
+function Core.ShowControlButtons(text, position)
     if not CustomUi.ShowControlButtons(text) then
-        -- placement: top-left, top-right, bottom-left, bottom-right, top-center, bottom-center
-        local placement = "bottom-right"
+        -- placement: top-left, top-right, bottom-left, bottom-right
+        local placement = position or "bottom-right"
         SendNUIMessage({
             type = "controls",
             text = text,
