@@ -4,33 +4,33 @@ lua54 'yes'
 
 author 'DEVHUB (store.devhub.gg)'
 description 'LIBRARY FOR DEVHUB SCRIPTS'
-version '1.0.3'
+version '2.0.0'
 
 client_scripts {
     -- '@vrp/lib/utils.lua',
-    'shared.lua',
-    'sh.autoDetect.lua',
-    'c.main.lua',
-    'client/c.*.lua',
-    'tests/c.*.lua',
-    'tests/functions/c.*.lua',
-    'frameworks/**/c.*.lua',
+    'config.lua',
+    'core/shared/autoDetect.lua',
+    'core/client/main.lua',
+    'core/client/c.*.lua',
+    'core/tests/c.*.lua',
+    'core/tests/functions/c.*.lua',
+    'modules/**/c.*.lua',
 }
 
 server_scripts {
     -- '@vrp/lib/utils.lua',
     '@oxmysql/lib/MySQL.lua',
-    'shared.lua',
-    'sh.autoDetect.lua',
-    's.main.lua',
-    'server/s.*.lua',
-    'tests/s.*.lua',
-    'tests/functions/s.*.lua',
-    'frameworks/**/s.*.lua',
+    'config.lua',
+    'core/shared/autoDetect.lua',
+    'core/server/main.lua',
+    'core/server/s.*.lua',
+    'core/tests/s.*.lua',
+    'core/tests/functions/s.*.lua',
+    'modules/**/s.*.lua',
 }
 
 shared_scripts {
-    'shared/sh.*.lua',
+    'core/shared/sh.*.lua',
 }
 
 ui_page "html/index.html"

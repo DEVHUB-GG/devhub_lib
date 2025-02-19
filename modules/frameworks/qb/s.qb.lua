@@ -81,7 +81,7 @@ CreateThread(function()
 
     Core.GetFullName = function(source)
         local xPlayer = QBCore.Functions.GetPlayer(source)
-        return xPlayer.PlayerData.charinfo.firstname .. " " .. xPlayer.PlayerData.charinfo.lastname
+        return (xPlayer.PlayerData?.charinfo?.firstname or "Unknown") .. " " .. (xPlayer.PlayerData?.charinfo?.lastname or "Unknown")
     end
 
     RegisterNetEvent("hospital:server:SetLaststandStatus",function(status)

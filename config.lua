@@ -9,7 +9,14 @@ Shared.Framework = "AUTO DETECT"
 -- The target system being used. Possible targets: "AUTO DETECT", "ox_target", "qb-target", "standalone", "custom" 
 Shared.Target = "AUTO DETECT"
 
-Shared.CompatibilityTest = false -- Enable compatibility tests for the selected framework. !!WARNING!! This must be turned off in production environments.
+-- Vehicle keys system being used. Possible vehicle keys: "AUTO DETECT", "qb-vehiclekeys", "qs-vehiclekeys", "ak47_vehiclekeys", "t1ger_keys", "Renewed-Vehiclekeys", "cd_garage", "custom"
+Shared.VehicleKeys = "AUTO DETECT" 
+
+-- Fuel system being used. Possible fuel systems: "AUTO DETECT", "LegacyFuel", "ps-fuel", "ox_fuel", "cd_fuel", "custom"
+Shared.VehicleFuel = "AUTO DETECT"
+
+-- Enable compatibility tests for the selected framework. !!WARNING!! This must be turned off in production environments.
+Shared.CompatibilityTest = false
 -- 1. Add new item dh_test
 -- 2. Restart your server
 -- 3. Join the server and type /dh_startTest to start the test

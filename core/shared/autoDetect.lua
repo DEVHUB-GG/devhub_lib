@@ -1,4 +1,3 @@
-
 FRAMEWORK_RESOURCES = { -- some framework like qbox uses provide to imitate other frameworks
     ['ESX'] = {
         "es_extended",
@@ -20,6 +19,55 @@ TARGET_RESOURCES = {
     ['qb-target'] = "qb-target",
 }
 
+VEHICLE_KEYS_RESOURCES = {
+    ['qb-vehiclekeys'] = {
+        "qb-vehiclekeys",
+        "qbx_vehiclekeys",
+    },
+    ['qs-vehiclekeys'] = {
+        "qs-vehiclekeys",
+    },
+    ['ak47_vehiclekeys'] = {
+        "ak47_vehiclekeys",
+        "ak47_qb_vehiclekeys",
+    },
+    ['t1ger_keys'] = {
+        "t1ger_keys",
+    },
+    ['Renewed-Vehiclekeys'] = {
+        "Renewed-Vehiclekeys",
+    },
+    ['cd_garage'] = {
+        "cd_garage",
+    },
+}
+
+FUEL_RESOURCES = {
+    ['LegacyFuel'] = {
+        "LegacyFuel",
+    },
+    ['ps-fuel'] = {
+        "ps-fuel",
+    },
+    ['ox_fuel'] = {
+        "ox_fuel",
+    },
+    ['cd_fuel'] = {
+        "cd_fuel",
+    },
+}
+
+SQL_RESOURCES = {
+    ['oxmysql'] = {
+        "oxmysql",
+    },
+    ['mysql-async'] = {
+        "mysql-async",
+    },
+    ['ghmattimysql'] = {
+        "ghmattimysql",
+    },
+}
 
 if Shared.Framework == "AUTO DETECT" then
     local frameworkDetected = false
@@ -38,7 +86,7 @@ if Shared.Framework == "AUTO DETECT" then
     local max = 0
     local maxFramework = ""
     local sameLevel = {}
-    for k, v in pairs(mostCompatibleFramework) do
+    for k, v in pairs(mostCompatibleFramework) do -- qbox uses provide to imitate other frameworks
         if v > max then
             max = v
             maxFramework = k
@@ -85,6 +133,50 @@ if Shared.Target == "AUTO DETECT" then
     end
 end
 
+ 
+if Shared.VehicleKeys == "AUTO DETECT" then
+    local vehicleKeysDetected = false
+    for k, v in pairs(VEHICLE_KEYS_RESOURCES) do
+        for _, resource in pairs(v) do
+            local status = GetResourceState(resource)
+            if status == "started" then
+                Shared.VehicleKeys = k
+                vehicleKeysDetected = true
+                print("^3dh_lib:^7 Vehicle Keys detected: ^2"..k.."^7")
+                break
+            end
+        end
+        if vehicleKeysDetected then
+            break
+        end
+    end
+    if not vehicleKeysDetected then
+        print("^3dh_lib:^1 Vehicle Keys not detected. Please set it manually.\t^7 Vehicle Keys were automatically set to: ^2custom^7")
+        Shared.VehicleKeys = "custom"
+    end
+end
+
+if Shared.VehicleFuel == "AUTO DETECT" then
+    local fuelDetected = false
+    for k, v in pairs(FUEL_RESOURCES) do
+        for _, resource in pairs(v) do
+            local status = GetResourceState(resource)
+            if status == "started" then
+                Shared.VehicleFuel = k
+                fuelDetected = true
+                print("^3dh_lib:^7 Fuel System detected: ^2"..k.."^7")
+                break
+            end
+        end
+        if fuelDetected then
+            break
+        end
+    end
+    if not fuelDetected then
+        print("^3dh_lib:^1 Fuel System not detected. Please set it manually.\t^7 Fuel System was automatically set to: ^2custom^7")
+        Shared.VehicleFuel = "custom"
+    end
+end
 
 function createExport(name, cb)
     exports(name, function(...)

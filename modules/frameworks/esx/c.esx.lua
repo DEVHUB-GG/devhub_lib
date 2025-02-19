@@ -13,5 +13,10 @@ CreateThread( function()
         TriggerEvent("dh_lib:client:setDeathStatus", false)
     end)
 
+    RegisterNetEvent('esx:onPlayerLogout', function()
+        TriggerEvent("dh_lib:client:playerUnloaded")
+        TriggerServerEvent("dh_lib:server:playerUnloaded", GetPlayerServerId(PlayerId()))
+    end)
+
     Core.Loaded = true
 end)

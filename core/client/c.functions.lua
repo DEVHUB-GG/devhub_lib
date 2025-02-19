@@ -1,35 +1,35 @@
 function Core.DumpTable(table, nb)
-    if nb == nil then 
-        nb = 0
-    end 
-    if type(table) == 'table' then
-        local s = ''
-        for i = 1, nb + 1, 1 do
-            s = s .. "    "
+    nb = nb or 0 
+    local indent = string.rep("    ", nb) -- Tworzy poprawne wcięcie
+
+    if type(table) == "table" then
+        local s = "{\n" -- Otwieramy nową tabelę na nowej linii
+        for k, v in pairs(table) do
+            local key = (type(k) == "number") and ("[" .. k .. "]") or ("[\"" .. k .. "\"]")
+            s = s .. indent .. "    " .. key .. " = " .. Core.DumpTable(v, nb + 1) .. ",\n"
         end
-        s = '{\n'
-        for k,v in pairs(table) do
-            if type(k) ~= 'number' then k = '"'..k..'"' end
-            for i = 1, nb, 1 do
-                s = s .. "    "
-            end
-            s = s .. '['..k..'] = ' .. Core.DumpTable(v, nb + 1) .. '",\n'
-        end
-        for i = 1, nb, 1 do
-            s = s .. "    "
-        end
-        return s .. '}'
+        return s .. indent .. "}" -- Zamykamy tabelę na tej samej głębokości
     else
-        return tostring(table)
+        return type(table) == "string" and ("\"" .. table .. "\"") or tostring(table)
     end
 end
+
+
 function Core.RequestModel(modelHash, cb)
 	modelHash = (type(modelHash) == 'number' and modelHash or GetHashKey(modelHash))
 
 	if not HasModelLoaded(modelHash) then
 		RequestModel(modelHash)
-
+        local attempts = 0
 		while not HasModelLoaded(modelHash) do
+            attempts = attempts + 1
+            if attempts > 100 then
+                print("Failed to load model: " .. modelHash)
+                if cb ~= nil then
+                    cb()
+                end
+                return false
+            end
 			Citizen.Wait(1)
 		end
 	end
@@ -37,6 +37,7 @@ function Core.RequestModel(modelHash, cb)
 	if cb ~= nil then
 		cb()
 	end
+    return true
 end
 
 function Core.GetClosestVehicle(coords)
@@ -66,7 +67,9 @@ end
 
 function Core.SpawnObject(model, coords, cb, isLocal)
 	local model = (type(model) == 'number' and model or GetHashKey(model))
-	Core.RequestModel(model)
+	if not Core.RequestModel(model) then
+        return false
+    end
 	local networked = true 
 	if isLocal then 
 		networked = false
@@ -101,10 +104,15 @@ function Core.DeleteVehicle(vehicle)
     return true
 end
 
-function Core.SpawnVehicle(modelName, coords, heading, cb, _networked)
+function Core.SpawnVehicle(modelName, coords, heading, cb, _networked, fuel)
 	local model = (type(modelName) == 'number' and modelName or GetHashKey(modelName))
 	Citizen.CreateThread(function()
-		Core.RequestModel(model)
+		if not Core.RequestModel(model) then
+            if cb then
+                cb(false)
+            end
+            return false
+        end
 		local networked = _networked ~= nil and _networked or true
 		local vehicle = CreateVehicle(model, coords.x, coords.y, coords.z, heading, networked, networked)
 		local id      = NetworkGetNetworkIdFromEntity(vehicle)
@@ -118,7 +126,8 @@ function Core.SpawnVehicle(modelName, coords, heading, cb, _networked)
         SetVehicleIsWanted(vehicle, false)
         SetVehRadioStation(vehicle, 'OFF')
         local plate = GetVehicleNumberPlateText(vehicle) 
-        -- function to add keys
+        Core.AddVehicleKeys(plate, vehicle)
+        Core.SetVehicleFuel(vehicle, fuel or 100.0)
         RequestCollisionAtCoord(coords.x, coords.y, coords.z)
 		while not HasCollisionLoadedAroundEntity(vehicle) do
 			RequestCollisionAtCoord(coords.x, coords.y, coords.z)
@@ -191,7 +200,8 @@ function generateRandomChar(length)
 end
  
 function Core.Notify(text, duration, notificationType)
-    if not CustomUi.Notify(text, duration, notificationType) then
+    local notifyType = CustomUi.NotifyTypes[notificationType] or CustomUi.NotifyTypes['info']
+    if not CustomUi.Notify(text, duration, notifyType) then
         -- notificationType: 'info', 'error', 'success', 'warning'
         -- placement: top-left, top-right, bottom-left, bottom-right, top-center, bottom-center
         -- duration: in ms
@@ -213,7 +223,7 @@ end)
 function Core.ShowStaticMessage(text, position)
     if not CustomUi.ShowStaticMessage(text) then
         -- placement: top-left, top-right, bottom-left, bottom-right
-        local placement = position or "top-left"
+        local placement = position or CustomUi.StaticMessagePosition
         SendNUIMessage({
             type = "static",
             text = text,
@@ -226,7 +236,7 @@ end
 function Core.ShowControlButtons(text, position)
     if not CustomUi.ShowControlButtons(text) then
         -- placement: top-left, top-right, bottom-left, bottom-right
-        local placement = position or "bottom-right"
+        local placement = position or CustomUi.ControlButtonsPosition
         SendNUIMessage({
             type = "controls",
             text = text,
@@ -245,7 +255,7 @@ function Core.ShowProgressbar(data, cb)
         local duration = data?.duration --@required in ms
         if not duration then print("Duration is required for progressbar") return end
         -- placement: low, medium, high
-        local placement = data?.placement or "low"
+        local placement = data?.placement or CustomUi.ProgressbarPlacement
         local text = data?.text or "Loading..."
         local canStop = data?.canStop or false
         SendNUIMessage({
@@ -414,7 +424,7 @@ end
 
 Core.GenerateUid = function()
     local serverId = GetPlayerServerId(PlayerId())
-    return serverId..'DHC'..GetClientTimestamp()
+    return serverId..'DHC'..Core.GetClientTimestamp()
 end
 
 Core.DecisionPrompt = function(settings, buttons)
