@@ -16,6 +16,7 @@ end
 
 
 function Core.RequestModel(modelHash, cb)
+    local originalName = modelHash
 	modelHash = (type(modelHash) == 'number' and modelHash or GetHashKey(modelHash))
 
 	if not HasModelLoaded(modelHash) then
@@ -24,7 +25,7 @@ function Core.RequestModel(modelHash, cb)
 		while not HasModelLoaded(modelHash) do
             attempts = attempts + 1
             if attempts > 100 then
-                print("Failed to load model: " .. modelHash)
+                print("Failed to load model: " .. modelHash.. " | " .. originalName)
                 if cb ~= nil then
                     cb()
                 end
@@ -81,6 +82,8 @@ function Core.SpawnObject(model, coords, cb, isLocal)
     return obj
 end
 function Core.DeleteVehicle(vehicle)
+    local plate = GetVehicleNumberPlateText(vehicle)
+    Core.RemoveVehicleKeys(plate, vehicle)
     SetEntityAsMissionEntity(vehicle, false, true) 
     local attempt = 0
     NetworkRequestControlOfEntity(vehicle)
@@ -190,20 +193,20 @@ function Core.GetClosestPlayers(distance)
 end
 
 
-function generateRandomChar(length)
+function Core.GenerateRandomChar(length)
     local charset = {}
     for i = 48,  57 do table.insert(charset, string.char(i)) end
     for i = 65,  90 do table.insert(charset, string.char(i)) end
     for i = 97, 122 do table.insert(charset, string.char(i)) end
     if not length or length <= 0 then return '' end
-    return generateRandomChar(length - 1) .. charset[math.random(1, #charset)]
+    return Core.GenerateRandomChar(length - 1) .. charset[math.random(1, #charset)]
 end
  
 function Core.Notify(text, duration, notificationType)
     local notifyType = CustomUi.NotifyTypes[notificationType] or CustomUi.NotifyTypes['info']
     if not CustomUi.Notify(text, duration, notifyType) then
         -- notificationType: 'info', 'error', 'success', 'warning'
-        -- placement: top-left, top-right, bottom-left, bottom-right, top-center, bottom-center
+        -- placement: top-left, top-right, bottom-left, bottom-right
         -- duration: in ms
         local placement = "top-right"
         local duration = tonumber(duration) or 5000
@@ -471,4 +474,44 @@ function DecisionPrompt(settings, buttons)
         type = "closeDecision",
     })
     return decisionResult
+end
+
+Core.GetLengthOfObject = function(object)
+    local length = 0
+    for k,v in pairs(object) do
+        if v then
+            length = length + 1
+        end
+    end
+    return length
+end
+
+Core.IsObjectEmpty = function(object)
+    for k,v in pairs(object) do
+        if v then
+           return false
+        end
+    end
+    return true
+end
+
+Core.PlayAnim = function(animDict, animName, duration, flags)
+    if not animDict or not animName then return false end
+    local ped = PlayerPedId()
+    if not IsEntityPlayingAnim(ped, animDict, animName, 3) then
+        RequestAnimDict(animDict)
+        while not HasAnimDictLoaded(animDict) do
+            Wait(100)
+        end
+        TaskPlayAnim(ped, animDict, animName, 8.0, -8.0, duration or -1, flags or 1, 0.0, false, false, false)
+    end
+end
+ 
+Core.CopyClipboard = function(text)
+    if not text or text == "" then return false end
+    SendNUIMessage({
+        type = "copyClipboard",
+        text = text
+    })
+    return true
 end

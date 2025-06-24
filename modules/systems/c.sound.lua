@@ -22,7 +22,9 @@ CreateThread( function()
         exports['xsound']:fadeIn(uid, time, formatVolume(volume))
     end
     Core.FadeOut = function(uid, time)
-        exports['xsound']:fadeOut(uid, time)
+        if Core.SoundExists(uid) then
+            exports['xsound']:fadeOut(uid, time)
+        end
     end
     Core.ChangeDistance = function(uid, distance)
         exports['xsound']:Distance(uid, distance)

@@ -1,5 +1,7 @@
 Shared = {}
 
+Shared.DevelopmentMode = true -- Set to true if you want to enable development mode. This will enable additional features for development purposes, such as the prop generator. 
+
 -- This module contains shared configuration settings for the dh_lib.
 -- vRP support is currently in beta. Please report any issues you encounter, check before using in production environments.
 
@@ -14,6 +16,13 @@ Shared.VehicleKeys = "AUTO DETECT"
 
 -- Fuel system being used. Possible fuel systems: "AUTO DETECT", "LegacyFuel", "ps-fuel", "ox_fuel", "cd_fuel", "custom"
 Shared.VehicleFuel = "AUTO DETECT"
+
+Shared.InventorySystem = "AUTO DETECT" -- Inventory system being used. Possible inventory systems: "AUTO DETECT", "ox_inventory", "qb-inventory", "qbox-inventory", "esx_inventoryhud", "custom"
+
+-- UPDATE SOON
+Shared.ItemCarry = {
+    ["items1"] = { prop = "hei_prop_heist_box", offset = vec3(0.025, 0.08, 0.255), rotation = vec3(-145.0, 290.0, 0.0), anim = "1" },
+}
 
 -- Enable compatibility tests for the selected framework. !!WARNING!! This must be turned off in production environments.
 Shared.CompatibilityTest = false
@@ -53,3 +62,4 @@ Shared.CompatibilityTest = false
 --     close = true,
 --     description = ""
 -- },
+

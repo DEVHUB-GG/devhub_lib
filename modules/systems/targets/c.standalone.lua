@@ -69,9 +69,37 @@ CreateThread(function()
             Wait(1)
         end
 
+        local closestTargetIndex = nil
+        local closestEntity = nil
+        local closestDist = math.huge
+        local closestIsObject = false
+
+        if not modelTargets._prevEntities then
+            modelTargets._prevEntities = {}
+        end
+
         for k, v in pairs(modelTargets) do
             local model = GetHashKey(v.model)
             local peds = GetGamePool('CPed')
+            local objects = GetGamePool('CObject')
+
+            for i = 1, #objects do
+                local object = objects[i]
+                if DoesEntityExist(object) then
+                    local objectModel = GetEntityModel(object)
+                    if objectModel == model then
+                        local objectCoords = GetEntityCoords(object)
+                        local distance = #(cachedPed.coords - objectCoords)
+                        if distance < closestDist then
+                            closestDist = distance
+                            closestEntity = object
+                            closestTargetIndex = k
+                            closestIsObject = true
+                        end
+                    end
+                end
+            end
+
             for i = 1, #peds do
                 local ped = peds[i]
                 if DoesEntityExist(ped) then
@@ -79,28 +107,56 @@ CreateThread(function()
                     if pedModel == model then
                         local pedCoords = GetEntityCoords(ped)
                         local distance = #(cachedPed.coords - pedCoords)
-                        if not v.started and distance < 5.0 and (not v.handler or v.handler(ped, distance)) then
-                            threadShouldStart = true
-                            v.started = true
-                            local _, groundZ = GetGroundZFor_3dCoord(pedCoords.x, pedCoords.y, pedCoords.z, 0)
-                            table.insert(targetsThread, {
-                                event = v.event,
-                                label = v.label,
-                                coords = vec3(pedCoords.x, pedCoords.y, groundZ + 0.05),
-                                radius = 2.5,
-                                id = k + 10000
-                            })
-                            CreateThread(TargetThread)
-                        elseif v.started and distance < 5.0 then
-                            threadShouldStart = true
-                        elseif v.started and distance > 5.0 then
-                            v.started = false
-                            RemoveTarget(k + 10000)
+                        if distance < closestDist then
+                            closestDist = distance
+                            closestEntity = ped
+                            closestTargetIndex = k
+                            closestIsObject = false
                         end
                     end
                 end
             end
-            Wait(1)
+        end
+
+        for k, v in pairs(modelTargets) do
+            local numericK = tonumber(k) or k
+            local id = (type(numericK) == "number" and numericK + 10000) or tostring(numericK) .. "_model"
+            local prevEntity = modelTargets._prevEntities[k]
+            if k == closestTargetIndex and closestEntity and closestDist < 5.0 then
+                local entityCoords = GetEntityCoords(closestEntity)
+                local radius = math.min(2.0, v.radius or 2.0)
+                if prevEntity and prevEntity ~= closestEntity then
+                    v.started = false
+                    RemoveTarget(id)
+                end
+                if (not v.started or prevEntity ~= closestEntity) and (not v.handler or v.handler(closestEntity, closestDist)) then
+                    for kk, vv in pairs(modelTargets) do
+                        if kk ~= k and vv.started then
+                            vv.started = false
+                            RemoveTarget(kk + 10000)
+                            modelTargets._prevEntities[kk] = nil
+                        end
+                    end
+                    threadShouldStart = true
+                    v.started = true
+                    modelTargets._prevEntities[k] = closestEntity
+                    local _, groundZ = GetGroundZFor_3dCoord(entityCoords.x, entityCoords.y, entityCoords.z, 0)
+                    table.insert(targetsThread, {
+                        event = v.event,
+                        label = v.label,
+                        coords = vec3(entityCoords.x, entityCoords.y, groundZ + 0.05),
+                        radius = radius,
+                        id = id
+                    })
+                    CreateThread(TargetThread)
+                elseif v.started then
+                    threadShouldStart = true
+                end
+            elseif v.started then
+                v.started = false
+                RemoveTarget(id)
+                modelTargets._prevEntities[k] = nil
+            end
         end
 
         if not threadShouldStart and threadStarted then

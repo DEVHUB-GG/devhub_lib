@@ -41,6 +41,20 @@ VEHICLE_KEYS_RESOURCES = {
         "cd_garage",
     },
 }
+INVENTORIES = {
+    ['ox_inventory'] = {
+        "ox_inventory",
+    },
+    ['qb-inventory'] = {
+        "qb-inventory",
+    },
+    ['qbox-inventory'] = {
+        "qbox-inventory",
+    },
+    ['esx_inventoryhud'] = {
+        "esx_inventoryhud",
+    },
+}
 
 FUEL_RESOURCES = {
     ['LegacyFuel'] = {
@@ -68,6 +82,8 @@ SQL_RESOURCES = {
         "ghmattimysql",
     },
 }
+
+Shared.Framework = string.upper(Shared.Framework)
 
 if Shared.Framework == "AUTO DETECT" then
     local frameworkDetected = false
@@ -155,6 +171,28 @@ if Shared.VehicleKeys == "AUTO DETECT" then
         Shared.VehicleKeys = "custom"
     end
 end
+if Shared.InventorySystem == "AUTO DETECT" then
+    local inventoryDetected = false
+    for k, v in pairs(INVENTORIES) do
+        for _, resource in pairs(v) do
+            local status = GetResourceState(resource)
+            if status == "started" then
+                Shared.InventorySystem = k
+                inventoryDetected = true
+                print("^3dh_lib:^7 Inventory System detected: ^2"..k.."^7")
+                break
+            end
+        end
+        if inventoryDetected then
+            break
+        end
+    end
+    if not inventoryDetected then
+        print("^3dh_lib:^1 Inventory System not detected. Please set it manually.\t^7 Inventory System was automatically set to: ^2custom^7")
+        Shared.InventorySystem = "custom"
+    end
+end
+
 
 if Shared.VehicleFuel == "AUTO DETECT" then
     local fuelDetected = false
