@@ -83,8 +83,6 @@ SQL_RESOURCES = {
     },
 }
 
-Shared.Framework = string.upper(Shared.Framework)
-
 if Shared.Framework == "AUTO DETECT" then
     local frameworkDetected = false
     local mostCompatibleFramework = {}
