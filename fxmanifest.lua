@@ -4,7 +4,7 @@ lua54 'yes'
 
 author 'DEVHUB (store.devhub.gg)'
 description 'LIBRARY FOR DEVHUB SCRIPTS'
-version '2.1.0'
+version '2.2.0'
 
 client_scripts {
     -- '@vrp/lib/utils.lua',
@@ -40,3 +40,9 @@ files {
 }
 
 provide 'dh_lib'
+
+escrow_ignore {
+    'core/**/*.lua',
+    'modules/**/*.lua',
+    'config.lua',
+}

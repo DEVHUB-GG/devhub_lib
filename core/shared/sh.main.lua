@@ -11,3 +11,22 @@ Core.GenerateString = function(length)
     end
     return generated
 end
+
+Core.GetLengthOfObject = function(object)
+    local length = 0
+    for k,v in pairs(object) do
+        if v then
+            length = length + 1
+        end
+    end
+    return length
+end
+
+Core.IsObjectEmpty = function(object)
+    for k,v in pairs(object) do
+        if v then
+           return false
+        end
+    end
+    return true
+end

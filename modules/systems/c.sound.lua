@@ -15,8 +15,8 @@ CreateThread( function()
     Core.PlaySoundLocally = function(uid, url, volume, loop)
         exports['xsound']:PlayUrl(uid, url, formatVolume(volume), loop)
     end
-    Core.PlaySoundCoords = function(uid, url, volume, coords)
-        exports['xsound']:PlayUrlPos(uid, url, formatVolume(volume), coords, false, false)
+    Core.PlaySoundCoords = function(uid, url, volume, coords, loop)
+        exports['xsound']:PlayUrlPos(uid, url, formatVolume(volume), coords, loop, false)
     end
     Core.FadeIn = function(uid, time, volume)
         exports['xsound']:fadeIn(uid, time, formatVolume(volume))

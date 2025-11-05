@@ -249,6 +249,8 @@ function Core.ShowControlButtons(text, position)
     end
 end
 
+
+
 local progressbarCb = nil
 local progressbarBusy = false
 function Core.ShowProgressbar(data, cb)
@@ -296,9 +298,9 @@ function Core.ShowProgressbar(data, cb)
         end
     end
 end
-
+ 
 RegisterNUICallback("progressbarResult", function(data, cb)
-    progressbarCb = data
+    progressbarCb = true
     cb('ok')
 end)
 
@@ -476,25 +478,6 @@ function DecisionPrompt(settings, buttons)
     return decisionResult
 end
 
-Core.GetLengthOfObject = function(object)
-    local length = 0
-    for k,v in pairs(object) do
-        if v then
-            length = length + 1
-        end
-    end
-    return length
-end
-
-Core.IsObjectEmpty = function(object)
-    for k,v in pairs(object) do
-        if v then
-           return false
-        end
-    end
-    return true
-end
-
 Core.PlayAnim = function(animDict, animName, duration, flags)
     if not animDict or not animName then return false end
     local ped = PlayerPedId()
@@ -515,3 +498,77 @@ Core.CopyClipboard = function(text)
     })
     return true
 end
+
+local popupFormCb = nil
+RegisterNUICallback("popupFormResult", function(result, cb)
+    SetNuiFocus(false, false)
+    popupFormCb = result
+    cb('ok')
+end)
+
+Core.PopupForm = function(data)
+    if not CustomUi.PopupForm(data, cb) then
+        SendNUIMessage({
+            type = "popupForm",
+            data = data
+        })
+        SetNuiFocus(true, true)
+        popupFormCb = nil
+        while popupFormCb == nil do
+            Wait(50)
+        end
+        cbData = popupFormCb
+        popupFormCb = nil
+        SetNuiFocus(false, false)
+        return cbData.status, cbData.data
+    end
+end
+
+-- RegisterCommand('popupForm', function()
+--     local status, data = Core.PopupForm({
+--         title = "Form Title", -- string: Title of the popup
+--         message = "Form Popup", -- string: Message/description
+--         yes = "Confirm", -- string: Label for confirm button
+--         no = "Cancel", -- string: Label for cancel button
+--         img = "https://picsum.photos/300/150", -- string: URL for image
+--         fields = {
+--             {
+--                 uid = "uid_1", -- string: Unique identifier for the field [REQUIRED]
+--                 field_type = "input", -- string: "input" | "selectDropdown" [REQUIRED]
+                
+--                 -- Input field options
+--                 placeholder = "Enter value", -- string
+--                 label = "", -- string
+--                 type = "text", -- string: "text" | "number"
+--                 min = nil, -- number | nil
+--                 max = nil, -- number | nil
+--                 maxLength = nil, -- number | nil
+--                 icon = "fas fa-user", -- string: Font Awesome icon class
+--                 iconPlacement = "right", -- string: "left" | "right"
+--                 iconBg = true, -- boolean
+--                 autoFocus = true, -- boolean
+--                 class = "", -- string: Additional CSS class
+--             },
+--             {
+--                 uid = "uid_2", -- string: Unique identifier [REQUIRED]
+--                 field_type = "selectDropdown", -- string: "input" | "selectDropdown" [REQUIRED]
+
+--                 -- Select dropdown options 
+--                 options = { -- [REQUIRED]
+--                     { uid = "option_1", text = "Option 1", icon = "fas fa-star" }, -- uid: string, text: string, icon: string, disabled?: boolean
+--                     { uid = "option_2", text = "Option 2", icon = "fas fa-heart", disabled = false }, -- disabled: boolean
+--                 },
+--                 selectedUid = false, -- false | string (uid)
+--                 disabled = false, -- boolean
+--                 searchable = false, -- boolean
+--                 searchPlaceholder = "Search options...", -- string
+--                 noResultsText = "No results found", -- string
+--                 emptyText = "No options available", -- string
+--                 autoSelectFirst = true, -- boolean
+--                 title = "", -- string (optional title above dropdown)
+--                 placement = "bottom", -- string: "bottom" | "top"
+--             },
+--         },
+--     })
+--     print("Popup Form Result: ", status, Core.DumpTable(data))
+-- end)

@@ -72,6 +72,14 @@ CreateThread(function()
         return jobData
     end
 
+    Core.IsPolice = function(source)
+        local xPlayer = exports.qbx_core:GetPlayer(source)
+        if xPlayer.PlayerData?.job?.name == "police" or xPlayer.PlayerData?.job?.name == "sheriff" or xPlayer.PlayerData?.job?.name == "state" then 
+            return true
+        end
+        return false
+    end
+
     Core.GetFullName = function(source)
         local xPlayer = exports.qbx_core:GetPlayer(source)
         return xPlayer.PlayerData.charinfo.firstname .. " " .. xPlayer.PlayerData.charinfo.lastname

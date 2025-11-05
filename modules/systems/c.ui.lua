@@ -48,3 +48,7 @@ CustomUi.ProgressbarPlacement = "low"
 CustomUi.CloseProgressbar = function()
     return false -- if you are using a custom progress bar, return true
 end
+
+CustomUi.PopupForm = function(data, cb)
+    return false -- if you are using a custom popup form, return true
+end

@@ -27,3 +27,19 @@ PerformHttpRequest('https://raw.githubusercontent.com/DEVHUB-GG/dh_versions/main
     end
     print("^3-------------------- DEVHUB.GG - Version Check --------------------^7")
 end)
+
+Citizen.CreateThread(function()
+    local scriptName = GetCurrentResourceName()
+    if scriptName ~= "devhub_lib" then
+        if scriptName == 'devhub_lib-main' then
+            print("^1----------------------------------------^7")
+            print("^1REMOVE -main FROM SCRIPT NAME !!!^7")
+            print("^1----------------------------------------^7")
+        else
+            print("^1----------------------------------------^7")
+            print("^1SCRIPT MUST BE NAMED devhub_lib !!!^7")
+            print("^1----------------------------------------^7")
+        end
+    end
+
+end)

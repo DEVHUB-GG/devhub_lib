@@ -6,12 +6,14 @@ CreateThread(function()
     -- @return The identifier of the player.
     Core.GetIdentifier = function(source)
         -- code here
-        -- check if there is steam, if not get license 
-        local steam = GetPlayerIdentifiers(source)[1]
-        if steam then
-            return steam
+        local license = GetPlayerIdentifierByType(source, 'license')
+        local colonPosition = string.find(license, ":") - 1
+        license = string.sub(license, colonPosition + 2)
+        if not license or license == "" then
+            print("^1No license found, returning nil.^7")
+            return nil
         end
-        return GetPlayerIdentifiers(source)[2]
+        return license
     end
 
     -- Registers an item with a corresponding function.
@@ -119,6 +121,13 @@ CreateThread(function()
         return jobData
     end
 
+    -- Checks if the player is a police officer.
+    -- @param source The player's source ID.
+    -- @return True if the player is a police officer, false otherwise.
+    Core.IsPolice = function(source)
+        return true
+    end
+    
     -- Gets the full name of the player.
     -- @param source The player's source ID.
     -- @return The full name of the player.

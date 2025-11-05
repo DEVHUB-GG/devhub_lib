@@ -27,8 +27,18 @@ CreateThread(function()
             event = data.event,
             label = data.label,
             handler = data.handler,
+            name = data.name,
             resource = GetInvokingResource(),
         })
+    end
+
+    Core.RemoveCoordsFromTarget = function(name)
+        for k, v in pairs(coordsTargets) do
+            if v.name == name then
+                table.remove(coordsTargets, k)
+                break
+            end
+        end
     end
 
     -- Core.AddCoordsToTarget(vec3(2832.7373, 2796.4502, 57.4704), {

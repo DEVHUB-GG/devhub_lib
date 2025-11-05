@@ -83,7 +83,7 @@ CreateThread(function()
 
     Core.GetItemCount = function(source, item)
         local xPlayer = ESX.GetPlayerFromId(source)
-        return xPlayer.getInventoryItem(item).count
+        return xPlayer.getInventoryItem(item)?.count or 0
     end
 
     Core.GetJob = function(source)
@@ -95,6 +95,14 @@ CreateThread(function()
             onDuty = xPlayer?.job?.onDuty or true,
         }
         return jobData
+    end
+
+    Core.IsPolice = function(source)
+        local xPlayer = ESX.GetPlayerFromId(source)
+        if xPlayer?.job?.name == "police" or xPlayer?.job?.name == "sheriff" or xPlayer?.job?.name == "state" then 
+            return true
+        end
+        return false
     end
 
     Core.GetFullName = function(source)
@@ -110,6 +118,14 @@ CreateThread(function()
     RegisterNetEvent('esx:playerDropped', function(playerId, reason)
         TriggerEvent("dh_lib:client:playerUnloaded", playerId)
         TriggerClientEvent("dh_lib:server:playerUnloaded", playerId)
+    end)
+
+    AddEventHandler('esx:onAddInventoryItem', function(source, itemName, itemCount)
+        TriggerClientEvent("devhub_lib:itemCarry:addItem:client", source, itemName)
+    end)
+
+    AddEventHandler('esx:onRemoveInventoryItem', function(source, itemName, itemCount)
+        TriggerClientEvent("devhub_lib:itemCarry:removeItem:client", source, itemName)
     end)
 
     Core.Loaded = true

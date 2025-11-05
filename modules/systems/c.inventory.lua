@@ -31,7 +31,7 @@ CreateThread( function()
             }
         end
     else
-        Debug("Error", "Invalid inventory system selected")
+        -- Debug("Error", "Invalid inventory system selected")
     end
 
 end)

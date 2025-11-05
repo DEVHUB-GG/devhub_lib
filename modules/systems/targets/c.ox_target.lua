@@ -1,6 +1,5 @@
 if Shared.Target ~= "ox_target" then return end 
 CreateThread( function() 
-
     Core.AddModelToTarget = function(model, data)
         exports.ox_target:addModel(model, {
             name = data.name, 
@@ -24,5 +23,8 @@ CreateThread( function()
                 }
             }
         })
+    end
+    Core.RemoveCoordsFromTarget = function(name)
+        exports.ox_target:removeZone(name)
     end
 end)

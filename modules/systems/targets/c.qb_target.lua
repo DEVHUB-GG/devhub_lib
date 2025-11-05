@@ -30,4 +30,7 @@ CreateThread( function()
             distance = data.radius or 2.0
         })
     end
+    Core.RemoveCoordsFromTarget = function(name)
+        exports['qb-target']:RemoveZone(name)
+    end
 end)

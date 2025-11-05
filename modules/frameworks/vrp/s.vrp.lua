@@ -98,6 +98,15 @@ CreateThread(function()
         return jobData
     end
 
+    Core.IsPolice = function(source)
+        local user_id = vRP.getUserId(source)
+        local job = vRP.getUserGroupByType(user_id, "job")
+        if job == "police" or job == "sheriff" or job == "state" then 
+            return true
+        end
+        return false
+    end
+
     Core.GetFullName = function(source)
         local user_id = vRP.getUserId(source)
         local identity = vRP.getUserIdentity(user_id)
