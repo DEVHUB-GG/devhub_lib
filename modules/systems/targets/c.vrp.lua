@@ -1,4 +1,4 @@
-if Shared.Target ~= "custom" then return end 
+if Shared.Target ~= "vrp" then return end 
 CreateThread( function() 
 
     Core.AddModelToTarget = function(model, data)

@@ -13,6 +13,7 @@ CreateThread( function()
         exports.ox_target:addSphereZone({
             coords = coords,
             radius = data.radius or 2.0,
+            name = data.name,
             options = {
                 {
                     name = data.name, 

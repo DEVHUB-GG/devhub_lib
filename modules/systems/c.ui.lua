@@ -5,6 +5,8 @@ CustomUi = {}
 -- Details about parameters in the documentation: https://docs.devhub.gg/scripts/devhub_lib-needed-for-each-script/ui
 
 CustomUi.Notify = function(text, duration, notificationType)
+    -- notificationType: 'info', 'error', 'success', 'warning'
+    -- duration: in ms
     return false -- if you are using a custom notification, return true
 end
 

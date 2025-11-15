@@ -115,9 +115,9 @@ CreateThread(function()
         TriggerEvent("dh_lib:server:playerLoaded", source)
     end)
 
-    RegisterNetEvent('esx:playerDropped', function(playerId, reason)
-        TriggerEvent("dh_lib:client:playerUnloaded", playerId)
-        TriggerClientEvent("dh_lib:server:playerUnloaded", playerId)
+    RegisterNetEvent('esx:playerDropped', function(source, reason)
+        TriggerEvent("dh_lib:server:playerUnloaded", source)
+        TriggerClientEvent("dh_lib:client:playerUnloaded", source)
     end)
 
     AddEventHandler('esx:onAddInventoryItem', function(source, itemName, itemCount)

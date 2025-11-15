@@ -4,7 +4,7 @@ lua54 'yes'
 
 author 'DEVHUB (store.devhub.gg)'
 description 'LIBRARY FOR DEVHUB SCRIPTS'
-version '2.2.0'
+version '2.2.1'
 
 client_scripts {
     -- '@vrp/lib/utils.lua',
