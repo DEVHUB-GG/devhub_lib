@@ -21,15 +21,30 @@ CreateThread(function()
     end
 
     Core.AddCoordsToTarget = function(coords, data)
-        table.insert(coordsTargets, {
-            coords = coords,
-            radius = data.radius or 2.0,
-            event = data.event,
-            label = data.label,
-            handler = data.handler,
-            name = data.name,
-            resource = GetInvokingResource(),
-        })
+        local options = {}
+        if data and data[1] then
+            for _, v in pairs(data) do
+                table.insert(coordsTargets, {
+                    coords = coords,
+                    radius = v.radius or 2.0,
+                    event = v.event,
+                    label = v.label,
+                    handler = v.handler,
+                    name = v.name,
+                    resource = GetInvokingResource(),
+                })
+            end
+        else
+            table.insert(coordsTargets, {
+                coords = coords,
+                radius = data.radius or 2.0,
+                event = data.event,
+                label = data.label,
+                handler = data.handler,
+                name = data.name,
+                resource = GetInvokingResource(),
+            })
+        end
     end
 
     Core.RemoveCoordsFromTarget = function(name)

@@ -10,19 +10,35 @@ CreateThread( function()
         })
     end
     Core.AddCoordsToTarget = function(coords, data)
-        exports.ox_target:addSphereZone({
-            coords = coords,
-            radius = data.radius or 2.0,
-            name = data.name,
+        local options = {}
+        if data and data[1] then
+            for _, v in pairs(data) do
+                options[#options + 1] = {
+                    event = v.event,
+                    icon = v.icon,
+                    label = v.label,
+                    canInteract = v.handler,
+                    name = v.name,
+                    radius = v.radius,
+                }
+            end
+        else
             options = {
                 {
-                    name = data.name, 
                     event = data.event,
                     icon = data.icon,
                     label = data.label,
-                    canInteract = data.handler
+                    canInteract = data.handler,
+                    name = data.name,
+                    radius = data.radius,
                 }
             }
+        end
+        exports.ox_target:addSphereZone({
+            coords = coords,
+            radius = options[1].radius or 2.0,
+            name = options[1].name,
+            options = options
         })
     end
     Core.RemoveCoordsFromTarget = function(name)

@@ -36,18 +36,32 @@ CreateThread( function()
             - @data.radius: The radius of the sphere zone
         ]]
         -- Implementation for custom target system would go here
-        exports["target"]:AddCircleZone(data.name, coords.xyz, 0.5, {
-            name = data.name,
-            heading = 0.0
-        }, {
-            Distance = 1.5,
+        local options = {}
+        if data and data[1] then
+            for _, v in pairs(data) do
+                options[#options + 1] = {
+                    event = v.event,
+                    label = v.label,
+                    tunnel = "client",
+                    name = v.name,
+                }
+            end
+        else 
             options = {
                 {
                     event = data.event,
                     label = data.label,
                     tunnel = "client",
-                },
+                    name = data.name,
+                }
             }
+        end
+        exports["target"]:AddCircleZone(options[1].name, coords.xyz, 0.5, {
+            name = options[1].name,
+            heading = 0.0
+        }, {
+            Distance = 1.5,
+            options = options
         })
     end
     Core.RemoveCoordsFromTarget = function(name)
