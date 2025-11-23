@@ -6,7 +6,7 @@ CreateThread(function()
     QBCore = exports['qb-core']:GetCoreObject()
 
     Core.GetIdentifier = function(source)
-        local Player = QBCore.Functions.GetPlayer(source)
+        local Player = QBCore.Functions.GetPlayer(tonumber(source))
         if not Player then return false end
         return Player.PlayerData.citizenid
     end
@@ -18,13 +18,13 @@ CreateThread(function()
     end
     
     Core.AddCash = function(source, amount)
-        local Player = QBCore.Functions.GetPlayer(source)
+        local Player = QBCore.Functions.GetPlayer(tonumber(source))
         Player.Functions.AddMoney('cash', amount)
         return true
     end
     
     Core.RemoveCash = function(source, amount)
-        local Player = QBCore.Functions.GetPlayer(source)
+        local Player = QBCore.Functions.GetPlayer(tonumber(source))
         if Player.PlayerData.money['cash'] < amount then
             return false
         end
@@ -33,22 +33,22 @@ CreateThread(function()
     end
     
     Core.GetCash = function(source)
-        local Player = QBCore.Functions.GetPlayer(source)
+        local Player = QBCore.Functions.GetPlayer(tonumber(source))
         return Player.PlayerData.money['cash']
     end
 
     Core.GetBank = function(source)
-        local Player = QBCore.Functions.GetPlayer(source)
+        local Player = QBCore.Functions.GetPlayer(tonumber(source))
         return Player.PlayerData.money.bank
     end
     
     Core.AddBank = function(source, amount)
-        local Player = QBCore.Functions.GetPlayer(source)
+        local Player = QBCore.Functions.GetPlayer(tonumber(source))
         return Player.Functions.AddMoney('bank', amount, 'bank deposit')
     end
 
     Core.RemoveBank = function(source, amount)
-        local Player = QBCore.Functions.GetPlayer(source)
+        local Player = QBCore.Functions.GetPlayer(tonumber(source))
         return Player.Functions.RemoveMoney('bank', amount, 'bank withdrawal')
     end
 
@@ -69,7 +69,7 @@ CreateThread(function()
     end
 
     Core.GetJob = function(source)
-        local xPlayer = QBCore.Functions.GetPlayer(source)
+        local xPlayer = QBCore.Functions.GetPlayer(tonumber(source))
         local jobData = {
             name = xPlayer.PlayerData?.job?.name or "unemployed",
             label = xPlayer.PlayerData?.job?.label or "Unemployed",
@@ -80,7 +80,7 @@ CreateThread(function()
     end
 
     Core.IsPolice = function(source)
-        local xPlayer = QBCore.Functions.GetPlayer(source)
+        local xPlayer = QBCore.Functions.GetPlayer(tonumber(source))
         if xPlayer.PlayerData?.job?.name == "police" or xPlayer.PlayerData?.job?.name == "sheriff" or xPlayer.PlayerData?.job?.name == "state" then 
             return true
         end
@@ -88,7 +88,7 @@ CreateThread(function()
     end
 
     Core.GetFullName = function(source)
-        local xPlayer = QBCore.Functions.GetPlayer(source)
+        local xPlayer = QBCore.Functions.GetPlayer(tonumber(source))
         return (xPlayer.PlayerData?.charinfo?.firstname or "Unknown") .. " " .. (xPlayer.PlayerData?.charinfo?.lastname or "Unknown")
     end
 

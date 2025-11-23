@@ -54,3 +54,50 @@ Core.GenerateUid = function(serverId)
     end
     return serverId..'DHS'..os.time()
 end
+
+local CachedPoliceCount = 0
+ 
+CreateThread(function()
+    Core.RegisterServerCallback('devhub_lib:getOnlinePoliceCount', function(source, cb)
+        local policeCount = Core.GetOnlinePoliceCount()
+        cb(policeCount)
+    end)
+    while true do
+        Wait(180000)
+        local players = GetPlayers()
+        local playerCount = #players
+        if playerCount > 40 then
+            local policeCount = 0
+            for _, playerId in ipairs(players) do
+                local job = Core.GetJob(playerId)
+                if job and job.name == 'police' then
+                    policeCount = policeCount + 1
+                end
+                Wait(100)
+            end
+            CachedPoliceCount = policeCount
+        end
+    end
+end)
+
+Core.GetOnlinePoliceCount = function()
+    local playerCount = #GetPlayers()
+    
+    if playerCount > 40 then
+        return CachedPoliceCount
+    end
+    
+    local policeCount = 0
+    local players = GetPlayers()
+    for _, playerId in ipairs(players) do
+        local job = Core.GetJob(playerId)
+        if job and job.name == 'police' then
+            policeCount = policeCount + 1
+        end
+        Wait(1)
+    end
+    
+    CachedPoliceCount = policeCount
+    
+    return policeCount
+end

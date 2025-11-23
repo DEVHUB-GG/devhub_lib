@@ -524,6 +524,14 @@ Core.PopupForm = function(data)
     end
 end
 
+Core.GetOnlinePoliceCount = function()
+    local p = promise:new()
+    Core.TriggerServerCallback('devhub_lib:getOnlinePoliceCount',function(data)
+        p:resolve(data)
+    end)
+    return Citizen.Await(p)
+end
+
 -- RegisterCommand('popupForm', function()
 --     local status, data = Core.PopupForm({
 --         title = "Form Title", -- string: Title of the popup
