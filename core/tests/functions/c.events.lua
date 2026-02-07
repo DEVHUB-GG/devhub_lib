@@ -2,6 +2,14 @@ if not Shared.CompatibilityTest then return end
 
 local playerDead = false
 
+RegisterNetEvent('dh_lib:client:test_showStatus', function(text)
+    if text then
+        Core.ShowStaticMessage("🧪 Testing: " .. text)
+    else
+        Core.ShowStaticMessage(false)
+    end
+end)
+
 local function displayText(text)
     SetTextFont(0)
     SetTextProportional(1)

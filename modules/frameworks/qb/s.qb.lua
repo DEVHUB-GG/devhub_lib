@@ -11,12 +11,6 @@ CreateThread(function()
         return Player.PlayerData.citizenid
     end
     
-    Core.RegisterItem = function(item, func)
-        QBCore.Functions.CreateUseableItem(item, function(source, item)
-            func(source)
-        end)
-    end
-    
     Core.AddCash = function(source, amount)
         local Player = QBCore.Functions.GetPlayer(tonumber(source))
         Player.Functions.AddMoney('cash', amount)
@@ -52,28 +46,13 @@ CreateThread(function()
         return Player.Functions.RemoveMoney('bank', amount, 'bank withdrawal')
     end
 
-    Core.AddItem = function(source, item, amount)
-        return exports['qb-inventory']:AddItem(source, item, amount)
-    end
-
-    Core.RemoveItem = function(source, item, amount)
-        return exports['qb-inventory']:RemoveItem(source, item, amount)
-    end
-
-    Core.GetItemCount = function(source, item)
-        return exports['qb-inventory']:GetItemCount(source, item)
-    end
-
-    Core.CanCarry = function(source, item, amount)
-        return exports['qb-inventory']:CanAddItem(source, item, amount)
-    end
-
     Core.GetJob = function(source)
         local xPlayer = QBCore.Functions.GetPlayer(tonumber(source))
         local jobData = {
             name = xPlayer.PlayerData?.job?.name or "unemployed",
             label = xPlayer.PlayerData?.job?.label or "Unemployed",
             grade = xPlayer.PlayerData?.job?.grade?.level or 0,
+            gradeLabel = xPlayer.PlayerData?.job?.grade?.name or "Unemployed",
             onDuty = xPlayer.PlayerData?.job?.onduty or false,
         }
         return jobData
@@ -90,6 +69,26 @@ CreateThread(function()
     Core.GetFullName = function(source)
         local xPlayer = QBCore.Functions.GetPlayer(tonumber(source))
         return (xPlayer.PlayerData?.charinfo?.firstname or "Unknown") .. " " .. (xPlayer.PlayerData?.charinfo?.lastname or "Unknown")
+    end
+
+    Core.GetUserInfo = function(source)
+        local xPlayer = QBCore.Functions.GetPlayer(tonumber(source))
+        local info = {
+            dateOfBirth = xPlayer.PlayerData?.charinfo?.birthdate or "Unknown",
+            sex = xPlayer.PlayerData?.charinfo?.gender or "Unknown",
+            height = xPlayer.PlayerData?.charinfo?.height or "Unknown", -- qb dosn't have height by default
+            nationality = xPlayer.PlayerData?.charinfo?.nationality or "Unknown",
+        }
+        return info
+    end
+
+    Core.GetUserSkin = function(source)
+        local xPlayer = QBCore.Functions.GetPlayer(tonumber(source))
+        local result Core.SQL.AwaitExecute('SELECT * FROM playerskins WHERE citizenid = ? AND active = ?', { xPlayer.PlayerData.citizenid, 1 })
+        return {
+            eyesColor = result?.skin?.eyes_color?.texture or 0, -- number
+            skinColor = result?.skin?.facemix?.skinMix or 0, -- number
+        }
     end
 
     RegisterNetEvent("hospital:server:SetLaststandStatus",function(status)

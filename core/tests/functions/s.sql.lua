@@ -2,25 +2,44 @@ if not Shared.CompatibilityTest then return end
 
 function test_sql()
     local sqlResource = "oxmysql"
-    if GetResourceState(sqlResource) == "started" then
-        testResults['SqlResource'].results = true
+    
+    -- Test SQL Resource
+    if TestHelper.IsResourceStarted(sqlResource) then
+        TestHelper.SetResult("SqlResource", true, "Status of resource: started : " .. sqlResource)
     else
-        testResults['FrameworkResource'].manualCheckRequired = {"Custom SQL resources state cannot be tested. Make sure you configured it correctly."}
+        TestHelper.SetResult("SqlResource", false, "Status of resource: " .. tostring(GetResourceState(sqlResource)) .. " : " .. sqlResource, {
+            manualCheckRequired = "Custom SQL resources state cannot be tested. Make sure you configured it correctly."
+        })
     end
-    testResults['SqlResource'].message = "Status of resource: "..tostring(GetResourceState(sqlResource)).." : "..sqlResource
 
-    Core.SQL.Execute("SELECT ?", {5}, function(cbSql)
-        if cbSql and cbSql[1]["5"] == 5 then
-            testResults['SqlAction'].results = true
-        end
-        testResults['SqlAction'].message = "Returned "..json.encode(cbSql)
+    -- Test SQL Execute (async)
+    local cbResult, hasError = TestHelper.Execute(function()
+        local result = nil
+        Core.SQL.Execute("SELECT ?", {5}, function(cbSql)
+            result = cbSql
+        end)
+        Wait(500)
+        return result
     end)
+    
+    if hasError then
+        TestHelper.SetResult("SqlAction", false, cbResult)
+    elseif cbResult and cbResult[1] and cbResult[1]["5"] == 5 then
+        TestHelper.SetResult("SqlAction", true, "Returned " .. json.encode(cbResult))
+    else
+        TestHelper.SetResult("SqlAction", false, "Unexpected result: " .. json.encode(cbResult or {}))
+    end
 
     Wait(200)
 
-    local cbSql = Core.SQL.AwaitExecute("SELECT ?", {10})
-    if cbSql and cbSql[1]["10"] == 10 then
-        testResults['SqlActionAwait'].results = true
+    -- Test SQL AwaitExecute (sync)
+    local awaitResult, awaitError = TestHelper.Execute(Core.SQL.AwaitExecute, "SELECT ?", {10})
+    
+    if awaitError then
+        TestHelper.SetResult("SqlActionAwait", false, awaitResult)
+    elseif awaitResult and awaitResult[1] and awaitResult[1]["10"] == 10 then
+        TestHelper.SetResult("SqlActionAwait", true, "Returned " .. json.encode(awaitResult))
+    else
+        TestHelper.SetResult("SqlActionAwait", false, "Unexpected result: " .. json.encode(awaitResult or {}))
     end
-    testResults['SqlActionAwait'].message = "Returned "..json.encode(cbSql)
 end

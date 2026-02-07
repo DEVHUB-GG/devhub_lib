@@ -42,4 +42,15 @@ Citizen.CreateThread(function()
         end
     end
 
+    while not Core or not Core.RegisterServerCallback or not Core.GetItemCount do
+        Citizen.Wait(100)
+    end
+    Core.RegisterServerCallback('core:callback:getItemsAmount', function(source, cb, itemsList)
+        local itemsAmount = {}
+        for i=1, #itemsList do
+            local itemName = itemsList[i]
+            itemsAmount[itemName] = Core.GetItemCount(source, itemName) or 0
+        end
+        cb(itemsAmount)
+    end)
 end)

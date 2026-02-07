@@ -41,6 +41,7 @@ VEHICLE_KEYS_RESOURCES = {
         "cd_garage",
     },
 }
+ 
 INVENTORIES = {
     ['ox_inventory'] = {
         "ox_inventory",
@@ -48,11 +49,17 @@ INVENTORIES = {
     ['qb-inventory'] = {
         "qb-inventory",
     },
-    ['qbox-inventory'] = {
-        "qbox-inventory",
+    ["ak47_inventory"] = {
+        "ak47_inventory",
     },
-    ['esx_inventoryhud'] = {
-        "esx_inventoryhud",
+    ["codem-inventory"] = {
+        "codem-inventory",
+    },
+    ["core_inventory"] = {
+        "core_inventory",
+    },
+    ["qs-inventory"] = {
+        "qs-inventory",
     },
 }
 
@@ -71,19 +78,18 @@ FUEL_RESOURCES = {
     },
 }
 
-SQL_RESOURCES = {
-    ['oxmysql'] = {
-        "oxmysql",
-    },
-    ['mysql-async'] = {
-        "mysql-async",
-    },
-    ['ghmattimysql'] = {
-        "ghmattimysql",
-    },
+local FRAMEWORK_NAME_ALIASES = {
+    ["ESX"] = {"esx", "es_extended"},
+    ["QBCore"] = {"qbcore", "qb-core", "qbx_core", "qb"},
+    ["QBOX"] = {"qbox", "qbx_core", "qbx"},
+    ["VRP"] = {"vrp"},
 }
 
-if Shared.Framework == "AUTO DETECT" then
+local function isAutoDetect(value)
+    return string.lower(value) == string.lower("AUTO DETECT") or string.lower(value) == string.lower("AUTO") or string.lower(value) == string.lower("AUTODETECT")
+end
+
+if isAutoDetect(Shared.Framework) then
     local frameworkDetected = false
     local mostCompatibleFramework = {}
     for k, v in pairs(FRAMEWORK_RESOURCES) do
@@ -118,37 +124,52 @@ if Shared.Framework == "AUTO DETECT" then
     if max > 0 then
         Shared.Framework = maxFramework
         frameworkDetected = true
-        print("^3dh_lib:^7 Framework detected: ^2"..maxFramework.."^7")
+        print("^3devhub_lib:^7 Framework detected: ^2"..maxFramework.."^7")
     end
     if not frameworkDetected then
-        print("^3dh_lib:^1 Framework not detected. Please set it manually.\t^7Framework was automatically set to: ^2custom^7")
+        print("^3devhub_lib:^1 Framework not detected. Please set it manually.\t^7Framework was automatically set to: ^2custom^7")
+        Shared.Framework = "custom"
+    end
+else
+    local frameworkDetected = false
+    for k, v in pairs(FRAMEWORK_NAME_ALIASES) do
+        for _, alias in pairs(v) do
+            if string.lower(Shared.Framework) == string.lower(alias) then
+                Shared.Framework = k
+                frameworkDetected = true
+                break
+            end
+        end
+    end
+    if not frameworkDetected then
+        print("^3devhub_lib:^1 Framework set in config.lua is not recognized. Please check it again.^7")
         Shared.Framework = "custom"
     end
 end
 
 if Shared.Framework == "VRP" then
-    print("^3dh_lib:^7 Before using ^1vRP^7 make sure to uncomment ^1@vrp/lib/utils.lua^7 in fxmanifest.lua !!!^7")
+    print("^3devhub_lib:^7 Before using ^1vRP^7 make sure to uncomment ^1@vrp/lib/utils.lua^7 in fxmanifest.lua !!!^7")
 end
 
-if Shared.Target == "AUTO DETECT" then
+if isAutoDetect(Shared.Target) then
     local targetDetected = false
     for k, v in pairs(TARGET_RESOURCES) do
         local status = GetResourceState(v)
         if status == "started" then
             Shared.Target = k
             targetDetected = true
-            print("^3dh_lib:^7 Target detected: ^2"..k.."^7")
+            print("^3devhub_lib:^7 Target detected: ^2"..k.."^7")
             break
         end
     end
     if not targetDetected then
-        print("^3dh_lib:^1 Target not detected. Please set it manually.\t^7Target was automatically set to: ^2standalone^7")
+        print("^3devhub_lib:^1 Target not detected. Please set it manually.\t^7Target was automatically set to: ^2standalone^7")
         Shared.Target = "standalone"
     end
 end
 
- 
-if Shared.VehicleKeys == "AUTO DETECT" then
+
+if isAutoDetect(Shared.VehicleKeys) then
     local vehicleKeysDetected = false
     for k, v in pairs(VEHICLE_KEYS_RESOURCES) do
         for _, resource in pairs(v) do
@@ -156,7 +177,7 @@ if Shared.VehicleKeys == "AUTO DETECT" then
             if status == "started" then
                 Shared.VehicleKeys = k
                 vehicleKeysDetected = true
-                print("^3dh_lib:^7 Vehicle Keys detected: ^2"..k.."^7")
+                print("^3devhub_lib:^7 Vehicle Keys detected: ^2"..k.."^7")
                 break
             end
         end
@@ -165,11 +186,11 @@ if Shared.VehicleKeys == "AUTO DETECT" then
         end
     end
     if not vehicleKeysDetected then
-        print("^3dh_lib:^1 Vehicle Keys not detected. Please set it manually.\t^7 Vehicle Keys were automatically set to: ^2custom^7")
+        print("^3devhub_lib:^1 Vehicle Keys not detected. Please set it manually.\t^7 Vehicle Keys were automatically set to: ^2custom^7")
         Shared.VehicleKeys = "custom"
     end
 end
-if Shared.InventorySystem == "AUTO DETECT" then
+if isAutoDetect(Shared.InventorySystem) then
     local inventoryDetected = false
     for k, v in pairs(INVENTORIES) do
         for _, resource in pairs(v) do
@@ -177,7 +198,7 @@ if Shared.InventorySystem == "AUTO DETECT" then
             if status == "started" then
                 Shared.InventorySystem = k
                 inventoryDetected = true
-                print("^3dh_lib:^7 Inventory System detected: ^2"..k.."^7")
+                print("^3devhub_lib:^7 Inventory System detected: ^2"..k.."^7")
                 break
             end
         end
@@ -186,13 +207,13 @@ if Shared.InventorySystem == "AUTO DETECT" then
         end
     end
     if not inventoryDetected then
-        print("^3dh_lib:^1 Inventory System not detected. Please set it manually.\t^7 Inventory System was automatically set to: ^2custom^7")
+        print("^3devhub_lib:^1 Inventory System not detected. Please set it manually.\t^7 Inventory System was automatically set to: ^2custom^7")
         Shared.InventorySystem = "custom"
     end
 end
 
 
-if Shared.VehicleFuel == "AUTO DETECT" then
+if isAutoDetect(Shared.VehicleFuel) then
     local fuelDetected = false
     for k, v in pairs(FUEL_RESOURCES) do
         for _, resource in pairs(v) do
@@ -200,7 +221,7 @@ if Shared.VehicleFuel == "AUTO DETECT" then
             if status == "started" then
                 Shared.VehicleFuel = k
                 fuelDetected = true
-                print("^3dh_lib:^7 Fuel System detected: ^2"..k.."^7")
+                print("^3devhub_lib:^7 Fuel System detected: ^2"..k.."^7")
                 break
             end
         end
@@ -209,7 +230,7 @@ if Shared.VehicleFuel == "AUTO DETECT" then
         end
     end
     if not fuelDetected then
-        print("^3dh_lib:^1 Fuel System not detected. Please set it manually.\t^7 Fuel System was automatically set to: ^2custom^7")
+        print("^3devhub_lib:^1 Fuel System not detected. Please set it manually.\t^7 Fuel System was automatically set to: ^2custom^7")
         Shared.VehicleFuel = "custom"
     end
 end

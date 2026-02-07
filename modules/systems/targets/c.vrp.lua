@@ -67,4 +67,99 @@ CreateThread( function()
     Core.RemoveCoordsFromTarget = function(name)
         exports["target"]:RemoveZone(name)
     end
+
+    Core.AddLocalEntityToTarget = function(entity, data)
+        local options = {}
+        if data and data[1] then
+            for _, v in pairs(data) do
+                options[#options + 1] = {
+                    event = v.event,
+                    label = v.label,
+                    tunnel = "client",
+                    name = v.name,
+                }
+            end
+        else
+            options = {
+                {
+                    event = data.event,
+                    label = data.label,
+                    tunnel = "client",
+                    name = data.name,
+                }
+            }
+        end
+        exports["target"]:AddTargetEntity(entity, {
+            options = options,
+            Distance = 1.5,
+        })
+    end
+
+    Core.RemoveLocalEntityFromTarget = function(entity, names)
+        exports["target"]:RemoveTargetEntity(entity, names)
+    end
+
+    Core.AddGlobalVehicleToTarget = function(data)
+        local options = {}
+        if data and data[1] then
+            for _, v in pairs(data) do
+                options[#options + 1] = {
+                    event = v.event,
+                    label = v.label,
+                    tunnel = "client",
+                    name = v.name,
+                    bones = v.bones,
+                }
+            end
+        else
+            options = {
+                {
+                    event = data.event,
+                    label = data.label,
+                    tunnel = "client",
+                    name = data.name,
+                    bones = data.bones,
+                }
+            }
+        end
+        exports["target"]:AddGlobalVehicle({
+            options = options,
+            Distance = 1.5,
+        })
+    end
+
+    Core.RemoveGlobalVehicleFromTarget = function(names)
+        exports["target"]:RemoveGlobalVehicle(names)
+    end
+
+    Core.AddGlobalPlayerToTarget = function(data)
+        local options = {}
+        if data and data[1] then
+            for _, v in pairs(data) do
+                options[#options + 1] = {
+                    event = v.event,
+                    label = v.label,
+                    tunnel = "client",
+                    name = v.name,
+                }
+            end
+        else
+            options = {
+                {
+                    event = data.event,
+                    label = data.label,
+                    tunnel = "client",
+                    name = data.name,
+                }
+            }
+        end
+        exports["target"]:AddGlobalPlayer({
+            options = options,
+            Distance = 1.5,
+        })
+    end
+
+    Core.RemoveGlobalPlayerFromTarget = function(names)
+        exports["target"]:RemoveGlobalPlayer(names)
+    end
 end)

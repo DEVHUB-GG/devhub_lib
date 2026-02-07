@@ -532,51 +532,61 @@ Core.GetOnlinePoliceCount = function()
     return Citizen.Await(p)
 end
 
--- RegisterCommand('popupForm', function()
---     local status, data = Core.PopupForm({
---         title = "Form Title", -- string: Title of the popup
---         message = "Form Popup", -- string: Message/description
---         yes = "Confirm", -- string: Label for confirm button
---         no = "Cancel", -- string: Label for cancel button
---         img = "https://picsum.photos/300/150", -- string: URL for image
---         fields = {
---             {
---                 uid = "uid_1", -- string: Unique identifier for the field [REQUIRED]
---                 field_type = "input", -- string: "input" | "selectDropdown" [REQUIRED]
-                
---                 -- Input field options
---                 placeholder = "Enter value", -- string
---                 label = "", -- string
---                 type = "text", -- string: "text" | "number"
---                 min = nil, -- number | nil
---                 max = nil, -- number | nil
---                 maxLength = nil, -- number | nil
---                 icon = "fas fa-user", -- string: Font Awesome icon class
---                 iconPlacement = "right", -- string: "left" | "right"
---                 iconBg = true, -- boolean
---                 autoFocus = true, -- boolean
---                 class = "", -- string: Additional CSS class
---             },
---             {
---                 uid = "uid_2", -- string: Unique identifier [REQUIRED]
---                 field_type = "selectDropdown", -- string: "input" | "selectDropdown" [REQUIRED]
+-- Required Items UI
+-- Shows a display of required items with their quantities and status
+-- @param data table: { title?: string, items: { name: string, amount: number }[], checkAmount?: boolean }
+-- @param cb function: callback when items are ready (optional, used when checkAmount is true)
+Core.ShowRequiredItems = function(data, cb)
+    if not data or not data.items then 
+        print("[devhub_lib] ShowRequiredItems: items are required")
+        return false 
+    end
+    
+    local checkAmount = data.checkAmount ~= false -- default true
+    local itemNames = {}
+    for _, item in ipairs(data.items) do
+        itemNames[#itemNames + 1] = item.name
+    end
+    
+    local function sendItems(itemCounts)
+        local items = {}
+        for _, item in ipairs(data.items) do
+            local itemData = Core.GetItemData(item.name)
+            local count = itemCounts and itemCounts[item.name] or 0
+            local requiredAmount = item.amount or 1
+            items[#items + 1] = {
+                name = item.name,
+                label = itemData and itemData.label or item.name,
+                img = itemData and itemData.img or "",
+                amount = requiredAmount,
+                hasItem = (not checkAmount) or (count >= requiredAmount)
+            }
+        end
+        
+        SendNUIMessage({
+            type = "showRequiredItems",
+            title = data.title,
+            items = items,
+            checkAmount = checkAmount
+        })
+        
+        if cb then cb(items) end
+    end
+    
+    if checkAmount then
+        Core.TriggerServerCallback('core:callback:getItemsAmount', function(itemCounts)
+            sendItems(itemCounts)
+        end, itemNames)
+    else
+        sendItems(nil)
+    end
+    
+    return true
+end
 
---                 -- Select dropdown options 
---                 options = { -- [REQUIRED]
---                     { uid = "option_1", text = "Option 1", icon = "fas fa-star" }, -- uid: string, text: string, icon: string, disabled?: boolean
---                     { uid = "option_2", text = "Option 2", icon = "fas fa-heart", disabled = false }, -- disabled: boolean
---                 },
---                 selectedUid = false, -- false | string (uid)
---                 disabled = false, -- boolean
---                 searchable = false, -- boolean
---                 searchPlaceholder = "Search options...", -- string
---                 noResultsText = "No results found", -- string
---                 emptyText = "No options available", -- string
---                 autoSelectFirst = true, -- boolean
---                 title = "", -- string (optional title above dropdown)
---                 placement = "bottom", -- string: "bottom" | "top"
---             },
---         },
---     })
---     print("Popup Form Result: ", status, Core.DumpTable(data))
--- end)
+-- Hides the required items UI
+Core.HideRequiredItems = function()
+    SendNUIMessage({
+        type = "hideRequiredItems"
+    })
+end

@@ -17,19 +17,16 @@ Shared.VehicleKeys = "AUTO DETECT"
 -- Fuel system being used. Possible fuel systems: "AUTO DETECT", "LegacyFuel", "ps-fuel", "ox_fuel", "cd_fuel", "custom"
 Shared.VehicleFuel = "AUTO DETECT"
 
-Shared.InventorySystem = "AUTO DETECT" -- Inventory system being used. Possible inventory systems: "AUTO DETECT", "ox_inventory", "qb-inventory", "custom"
-
-
+-- Inventory system being used. Possible inventory systems: "AUTO DETECT", "ox_inventory", "qb-inventory", "custom", "none"
+Shared.InventorySystem = "AUTO DETECT" 
 
 -- Enable compatibility tests for the selected framework. !!WARNING!! This must be turned off in production environments.
 Shared.CompatibilityTest = false
 -- 1. Add new item dh_test
 -- 2. Restart your server
 -- 3. Join the server and type /dh_startTest to start the test
--- 4. Use item dh_test
--- 5. Revive yourself when you die
--- 6. You will be kicked from the server
--- 7. Check the server console for the test results
+-- 4. Follow the instructions in the chat
+-- 5. Check the server console for the test results
 
 -- ESX
 -- INSERT INTO `items` (`name`, `label`, `weight`, `rare`, `can_remove`) VALUES ('dh_test', 'DEVHUB TEST', 1, 0, 1);
@@ -37,7 +34,7 @@ Shared.CompatibilityTest = false
 -- QBOX
 --	['dh_test'] 			 = {['name'] = 'dh_test', 				['label'] = 'Dh test', 				['weight'] = 500, 		['type'] = 'item', 		['image'] = 'dh_test.png', 		['unique'] = false, 		['useable'] = true, 	['shouldClose'] = true,	   ['combinable'] = nil,   ['description'] = 'DEVHUB TEST ITEM'},
 
--- qb-core/shared/items.lua 
+-- qb-core/shared/items.lua A
 -- ["dh_test"] = {
 --     ["name"] = "dh_test",                                                        
 --     ["label"] = "DEVHUB TEST",

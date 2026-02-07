@@ -16,17 +16,6 @@ CreateThread(function()
         return license
     end
 
-    -- Registers an item with a corresponding function.
-    -- @param item The item to register.
-    -- @param func The function to be called when the item is used.
-    -- The function should take a single parameter, the player's source ID.
-    -- @return void
-    Core.RegisterItem = function(item, func)
-        -- RegisterUsableItem(item, function(playerId)
-        --     func(playerId)
-        -- end)
-    end
-
     -- Adds cash to the player's account.
     -- @param source The player's source ID.
     -- @param amount The amount of cash to add.
@@ -73,49 +62,15 @@ CreateThread(function()
         return true
     end
 
-    -- Adds an item to the player's inventory.
-    -- @param source The player's source ID.
-    -- @param item The item to add to the player's inventory.
-    -- @param amount The amount of the item to add.
-    -- @return True if the operation was successful, false otherwise.
-    Core.AddItem = function(source, item, amount)
-        return true
-    end
-
-    -- Removes an item from the player's inventory.
-    -- @param source The player's source ID.
-    -- @param item The item to remove from the player's inventory.
-    -- @param amount The amount of the item to remove.
-    -- @return True if the operation was successful, false otherwise.
-    Core.RemoveItem = function(source, item, amount)
-        return true
-    end
-
-    -- Gets the count of a specific item in the player's inventory.
-    -- @param source The player's source ID.
-    -- @param item The item to count in the player's inventory.
-    -- @return The count of the specified item in the player's inventory.
-    Core.GetItemCount = function(source, item)
-        return 0
-    end
-
-    -- Checks if the player can carry a specific amount of an item.
-    -- @param source The player's source ID.
-    -- @param item The item to check.
-    -- @param amount The amount of the item to check.
-    -- @return True if the player can carry the specified amount, false otherwise.
-    Core.CanCarry = function(source, item, amount)
-        return true
-    end
-
     -- Gets the job data of the player.
     -- @param source The player's source ID.
-    -- @return A table containing the player's job data (name, label, grade, onDuty).
+    -- @return A table containing the player's job data (name, label, grade, gradeLabel, onDuty).
     Core.GetJob = function(source)
         local jobData = {
             name = "unemployed",
             label = "Unemployed",
             grade = 0,
+            gradeLabel = "Unemployed",
             onDuty = false,
         }
         return jobData
@@ -133,6 +88,23 @@ CreateThread(function()
     -- @return The full name of the player.
     Core.GetFullName = function(source)
         return "Firstname Lastname"
+    end
+
+    Core.GetUserInfo = function(source)
+        local info = {
+            dateOfBirth = "Unknown",
+            sex = "Unknown",
+            height = "Unknown",
+            nationality = "Unknown",
+        }
+        return info
+    end
+
+    Core.GetUserSkin = function(source)
+        return {
+            eyesColor = 0, -- number
+            skinColor = 0, -- number
+        }
     end
 
     Core.Loaded = true

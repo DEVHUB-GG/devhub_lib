@@ -1,8 +1,11 @@
 RegisterNetEvent('dh_lib:server:sendLog',function(_source, webhook, data)
+    local identifier = ""
     local message = ""
     if _source then
-        local identifier = Core.GetIdentifier(_source)
-        message = message .. "**Player:** " .. GetPlayerName(_source) .. " (".._source..")\n**Identifier: **" .. (identifier or "unknown") .. "\n\n"
+        identifier = Core.GetIdentifier(_source)
+        message = message .. "**Player:** " .. GetPlayerName(_source) .. " (".._source..")\n**Identifier: **" .. identifier .. "\n\n"
+    else
+        message = "**Identifier: SYSTEM**\n\n"
     end
     for k,v in pairs(data) do
         message = message .. "**"..Core.String.Capitalize(k)..":** " .. tostring(v) .. "\n"

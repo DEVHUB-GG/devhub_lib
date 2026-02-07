@@ -1,19 +1,39 @@
 if not Shared.CompatibilityTest then return end
 
+-- Server callback to get another player's server ID
+Core.RegisterServerCallback('dh_lib:test:getOtherPlayer', function(source, cb)
+    local players = GetPlayers()
+    for _, playerId in ipairs(players) do
+        local playerSource = tonumber(playerId)
+        if playerSource and playerSource ~= source then
+            cb(playerSource)
+            return
+        end
+    end
+    cb(nil)
+end)
+
 function test_target()
-    local targetCheckFailed = true
-    if Shared.Target == 'standalone' then
-        testResults['TargetResource'].results = true
+    -- Standalone target is always valid
+    if Shared.Target == "standalone" then
+        TestHelper.SetResult("TargetResource", true, "Standalone target - no resource needed")
         return
     end
-    if Shared.Target ~= 'custom' and TARGET_RESOURCES[Shared.Target] then
-        if GetResourceState(TARGET_RESOURCES[Shared.Target]) == "started" then
-            testResults['TargetResource'].results = true
-            targetCheckFailed = false
-        end
-        testResults['TargetResource'].message = "Status of resource: "..tostring(GetResourceState(Shared.Target)).." : "..Shared.Target
+    
+    -- Custom target requires manual verification
+    if Shared.Target == "custom" or not TARGET_RESOURCES[Shared.Target] then
+        TestHelper.SetResult("TargetResource", false, "Custom target configured", {
+            manualCheckRequired = "Custom targets cannot be tested. Make sure you configured it correctly."
+        })
+        return
     end
-    if targetCheckFailed then
-        testResults['TargetResource'].manualCheckRequired = {"Custom targets cannot be tested. Make sure you configured it correctly."}
-    end
+    
+    -- Check if target resource is started
+    local resourceName = TARGET_RESOURCES[Shared.Target]
+    local isStarted = TestHelper.IsResourceStarted(resourceName)
+    
+    TestHelper.SetResult("TargetResource", isStarted, 
+        "Status of resource: " .. tostring(GetResourceState(resourceName)) .. " : " .. resourceName,
+        not isStarted and { manualCheckRequired = "Target resource '" .. resourceName .. "' is not started." } or nil
+    )
 end
