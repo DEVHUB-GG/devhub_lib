@@ -193,9 +193,13 @@ RegisterNetEvent('dh_lib:server:startTest',function()
         showTestStatus(source, "User Functions")
         TestHelper.RunTest("GetJob", test_user, source)
     end
+    Wait(500)
     showTestStatus(source, false)
-
+    DropPlayer(source, "You have been kicked from the server for compatibility tests. You will see the test results in the server console.")
     print("^3DEVHUB:^7 Compatibility tests finished.")
+    print("^3DEVHUB:^7 Saving test results to file...")
+    Wait(3000)
+
     print("^3DEVHUB:^7 Test results:")
     local amountOfPassedTests = 0
     local amountOfFailedTests = 0

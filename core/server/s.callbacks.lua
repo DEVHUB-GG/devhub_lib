@@ -11,7 +11,9 @@ end
 
 RegisterServerEvent('dh_lib:server:triggerServerCallback', function(name, requestId, ...)
 	local source = source
-	Core.TriggerServerCallback(name, requestID, source, function(...)
+	Core.TriggerServerCallback(name, requestId, source, function(...)
 		TriggerClientEvent('dh_lib:client:serverCallback', source, requestId, ...)
 	end, ...)
 end)
+
+LoadedSystems['callbacks'] = true

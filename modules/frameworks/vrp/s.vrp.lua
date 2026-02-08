@@ -144,5 +144,5 @@ CreateThread(function()
         end
     end)
     
-    Core.Loaded = true
+    LoadedSystems["framework"] = true
 end)

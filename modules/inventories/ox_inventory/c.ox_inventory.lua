@@ -20,3 +20,5 @@ RegisterNetEvent("ox_inventory:currentWeapon", function(data)
         metadata = metadata,
     })
 end)
+
+LoadedSystems['inventory'] = true

@@ -1,12 +1,15 @@
 if not Shared.CompatibilityTest then return end
 
--- Server callback to get another player's server ID
+-- Server callback to get another player's server ID and coordinates
 Core.RegisterServerCallback('dh_lib:test:getOtherPlayer', function(source, cb)
     local players = GetPlayers()
     for _, playerId in ipairs(players) do
         local playerSource = tonumber(playerId)
         if playerSource and playerSource ~= source then
-            cb(playerSource)
+            local ped = GetPlayerPed(playerSource)
+            local coords = GetEntityCoords(ped)
+            local heading = GetEntityHeading(ped)
+            cb(playerSource, coords.x, coords.y, coords.z, heading)
             return
         end
     end

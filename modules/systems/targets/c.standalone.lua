@@ -407,6 +407,8 @@ CreateThread(function()
 
         Wait(threadShouldStart and 250 or 1000)
     end
+
+    LoadedSystems['targets'] = true
 end)
 
 function RemoveTarget(id)

@@ -2,7 +2,7 @@ if Shared.Framework ~= "ESX" then return end
    
 CreateThread( function()
     RegisterNetEvent("esx:playerLoaded",function()
-        TriggerEvent("dh_lib:client:playerLoaded")
+        -- TriggerEvent("dh_lib:client:playerLoaded")
     end)
 
     RegisterNetEvent("esx:onPlayerDeath",function()
@@ -18,5 +18,5 @@ CreateThread( function()
         TriggerServerEvent("dh_lib:server:playerUnloaded", GetPlayerServerId(PlayerId()))
     end)
 
-    Core.Loaded = true
+    LoadedSystems['framework'] = true
 end)

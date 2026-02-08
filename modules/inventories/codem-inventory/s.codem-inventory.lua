@@ -59,3 +59,5 @@ end
 Core.GetItemCount = function(source, item)
     return exports['codem-inventory']:GetItemsTotalAmount(source, item)
 end
+
+LoadedSystems['inventory'] = true

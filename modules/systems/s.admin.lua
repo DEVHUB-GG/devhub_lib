@@ -5,3 +5,5 @@ function Core.IsPlayerAdmin(source)
     end
     return false
 end
+
+LoadedSystems['admin'] = true

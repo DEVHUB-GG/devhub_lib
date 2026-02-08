@@ -103,5 +103,5 @@ CreateThread(function()
         TriggerClientEvent("dh_lib:client:setDeathStatus", source,  isDead)
     end)
 
-    Core.Loaded = true
+    LoadedSystems["framework"] = true
 end)

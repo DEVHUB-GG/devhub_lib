@@ -60,3 +60,5 @@ end
 Core.GetItemCount = function(source, item)
     return exports['ak47_inventory']:GetAmount(source, item)
 end
+
+LoadedSystems['inventory'] = true

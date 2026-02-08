@@ -59,3 +59,5 @@ end
 Core.GetItemCount = function(source, item)
     return exports.core_inventory:getItemCount(source, item)
 end
+
+LoadedSystems['inventory'] = true

@@ -1,12 +1,19 @@
 if Shared.InventorySystem ~= "ox_inventory" then return end  
 
 Core.RegisterItem = function(item, func)
-    exports(item, function(event, itemData, inventory, slot, data)
-        if event == 'usingItem' then
-            local slotData = exports.ox_inventory:GetSlot(inventory.id, slot)
-            func(inventory.id, slot, slotData?.metadata or {})
-        end
-    end)
+    if Shared.Framework == "ESX" then 
+        ESX.RegisterUsableItem(item, function(playerId)
+            func(playerId)
+        end)
+    elseif Shared.Framework == "QBCore" then
+        QBCore.Functions.CreateUseableItem(item, function(source, item)
+            func(source)
+        end)
+     elseif Shared.Framework == "QBOX" then
+        exports.qbx_core:CreateUseableItem(item, function(source, item)
+            func(source)
+        end)
+    end
 end
 
 Core.RegisterServerCallback('dh_lib:server:getItemData', function(source, cb, itemName)
@@ -62,3 +69,5 @@ end
 Core.GetItemCount = function(source, item)
     return exports.ox_inventory:GetItemCount(source, item)
 end
+
+LoadedSystems['inventory'] = true

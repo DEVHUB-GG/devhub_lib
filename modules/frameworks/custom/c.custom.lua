@@ -20,5 +20,5 @@ CreateThread( function()
         TriggerServerEvent("dh_lib:server:playerUnloaded", GetPlayerServerId(PlayerId()))
     end)
 
-    Core.Loaded = true
+    LoadedSystems['framework'] = true
 end)

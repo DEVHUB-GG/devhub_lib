@@ -22,3 +22,5 @@ end)
 RegisterNetEvent('onUnEquipWeapon', function(currentWeapon)
     TriggerEvent("devhub_lib:client:currentWeapon")
 end)
+
+LoadedSystems['inventory'] = true

@@ -21,3 +21,5 @@ RegisterNetEvent("qb-weapons:client:UseWeapon", function(data)
         metadata = metadata,
     })
 end)
+
+LoadedSystems['inventory'] = true

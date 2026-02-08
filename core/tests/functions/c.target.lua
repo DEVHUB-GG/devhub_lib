@@ -138,24 +138,25 @@ local function cleanup()
     testEntities = {}
 end
 
---- Get another player's server ID via server callback
----@param cb function Callback with (otherPlayerId or nil)
+--- Get another player's server ID and coordinates via server callback
+---@param cb function Callback with (otherPlayerId, otherPlayerPed or nil, serverCoords or nil)
 local function getOtherPlayer(cb)
-    Core.TriggerServerCallback('dh_lib:test:getOtherPlayer', function(otherPlayerId)
+    Core.TriggerServerCallback('dh_lib:test:getOtherPlayer', function(otherPlayerId, px, py, pz, pheading)
         if otherPlayerId then
+            local serverCoords = px and vector4(px, py, pz, pheading) or nil
             -- Try to get the ped from the player ID
             local otherPlayer = GetPlayerFromServerId(otherPlayerId)
             if otherPlayer and otherPlayer ~= -1 then
                 local ped = GetPlayerPed(otherPlayer)
                 if ped and DoesEntityExist(ped) then
-                    cb(otherPlayerId, ped)
+                    cb(otherPlayerId, ped, serverCoords)
                     return
                 end
             end
-            -- Player exists on server but not in client streaming range
-            cb(otherPlayerId, nil)
+            -- Player exists on server but not in client streaming range yet
+            cb(otherPlayerId, nil, serverCoords)
         else
-            cb(nil, nil)
+            cb(nil, nil, nil)
         end
     end)
 end
@@ -384,21 +385,12 @@ function test_target_interaction()
     
     -- Test 5: AddGlobalPlayerToTarget (requires another player)
     local globalPlayerTestDone = false
-    getOtherPlayer(function(otherPlayerId, otherPlayerPed)
+    getOtherPlayer(function(otherPlayerId, otherPlayerPed, serverCoords)
         if not otherPlayerId then
             -- No other player online - fail the test
             testResults['TargetGlobalPlayer'].results = false
             testResults['TargetGlobalPlayer'].message = "No other player online"
             testResults['TargetGlobalPlayer'].manualCheckRequired = { "Invite another player to the server to test AddGlobalPlayerToTarget." }
-            globalPlayerTestDone = true
-            return
-        end
-        
-        if not otherPlayerPed then
-            -- Player exists but not in streaming range - fail with different message
-            testResults['TargetGlobalPlayer'].results = false
-            testResults['TargetGlobalPlayer'].message = "Other player not in streaming range"
-            testResults['TargetGlobalPlayer'].manualCheckRequired = { "The other player is too far away. Ask them to come closer or teleport to them manually." }
             globalPlayerTestDone = true
             return
         end
@@ -419,7 +411,49 @@ function test_target_interaction()
             return
         end
         
-        -- Teleport near the other player
+        -- Teleport near the other player using server coords first (works even if not streamed in)
+        if not otherPlayerPed and serverCoords then
+            -- Use server-side coords to teleport close to the other player
+            local ped = PlayerPedId()
+            local heading = serverCoords.w or 0.0
+            local offsetX = serverCoords.x - (math.sin(math.rad(heading)) * 2.0)
+            local offsetY = serverCoords.y + (math.cos(math.rad(heading)) * 2.0)
+            SetEntityCoords(ped, offsetX, offsetY, serverCoords.z, false, false, false, false)
+            local dirX = serverCoords.x - offsetX
+            local dirY = serverCoords.y - offsetY
+            SetEntityHeading(ped, math.deg(math.atan2(dirX, dirY)))
+            
+            -- Wait for the other player to stream in
+            local streamTimeout = 10
+            while streamTimeout > 0 do
+                local otherPlayer = GetPlayerFromServerId(otherPlayerId)
+                if otherPlayer and otherPlayer ~= -1 then
+                    local otherPed = GetPlayerPed(otherPlayer)
+                    if otherPed and DoesEntityExist(otherPed) then
+                        otherPlayerPed = otherPed
+                        break
+                    end
+                end
+                streamTimeout = streamTimeout - 1
+                Wait(1000)
+            end
+            
+            if not otherPlayerPed then
+                testResults['TargetGlobalPlayer'].results = false
+                testResults['TargetGlobalPlayer'].message = "Other player did not stream in after teleport"
+                testResults['TargetGlobalPlayer'].manualCheckRequired = { "The other player could not be loaded. Make sure the other player is spawned in and not in an interior." }
+                globalPlayerTestDone = true
+                return
+            end
+        elseif not otherPlayerPed then
+            testResults['TargetGlobalPlayer'].results = false
+            testResults['TargetGlobalPlayer'].message = "Could not get other player coordinates"
+            testResults['TargetGlobalPlayer'].manualCheckRequired = { "The other player is too far away and coordinates could not be retrieved." }
+            globalPlayerTestDone = true
+            return
+        end
+        
+        -- Teleport precisely near the other player (now streamed in)
         teleportNearPlayer(otherPlayerPed)
         Wait(500)
         waitForInteraction("globalPlayer", 15, "TEST 5/5: AddGlobalPlayerToTarget")

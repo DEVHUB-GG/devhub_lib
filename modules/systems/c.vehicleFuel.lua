@@ -28,6 +28,10 @@ CreateThread(function()
         Core.SetVehicleFuel = function(vehicle, amount)
             exports['cd_fuel']:SetFuel(vehicle, formatFuel(amount))
         end
+    elseif Shared.VehicleFuel == "rcore_fuel" then
+        Core.SetVehicleFuel = function(vehicle, amount)
+            exports["rcore_fuel"]:SetFuel(vehicle, formatFuel(amount))
+        end   
     else -- custom or default
         Core.SetVehicleFuel = function(vehicle, amount)
             SetVehicleFuelLevel(vehicle, formatFuel(amount)) -- custom or default

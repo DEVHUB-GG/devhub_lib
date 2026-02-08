@@ -53,3 +53,5 @@ end
 Core.GetItemCount = function(source, item)
     return exports.ox_inventory:GetItemCount(source, item)
 end
+
+LoadedSystems['inventory'] = true

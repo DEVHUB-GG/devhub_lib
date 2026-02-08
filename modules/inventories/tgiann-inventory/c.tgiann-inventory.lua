@@ -1,14 +1,15 @@
-if Shared.InventorySystem ~= "codem-inventory" then return end  
-local Items = exports['codem-inventory']:GetItemList()
+if Shared.InventorySystem ~= "tgiann-inventory" then return end  
+local Items = exports['tgiann-inventory']:GetItemList()
+
 Core.GetItemData = function(itemName) 
     local itemData = Items[itemName]
+    if not itemData then return nil end
     return { 
         name = itemName,
-        label = itemData?.label or itemName,
-        img = itemData?.img or ('nui://codem-inventory/html/img/%s.png'):format(itemName),
+        label = itemData.label or itemName,
+        img = itemData.image or ('nui://inventory_images/images/%s.png'):format(itemName),
     }
 end
-
 
 RegisterNetEvent('onEquipWeapon', function(currentWeapon)
     --TODO if you have this inventory and need help, open a ticket  

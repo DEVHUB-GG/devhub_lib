@@ -68,3 +68,5 @@ end
 Core.GetItemCount = function(source, item)
     return exports['qs-inventory']:GetItemTotalAmount(source, item)
 end
+
+LoadedSystems['inventory'] = true

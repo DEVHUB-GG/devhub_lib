@@ -73,12 +73,14 @@ RegisterNetEvent('dh_lib:server:transferInventoryTestResults', function(clientIt
 end)
 
 Citizen.CreateThread(function()
+    print("^2Waiting for Core to load before starting item tests...^7")
     while not Core.Loaded do
         Wait(100)
     end
     Wait(1000)
-    
+    print("^2Starting item tests...^7", item)
     local _, regError = TestHelper.Execute(Core.RegisterItem, item, function(source)
+        print("Item used by player " .. tostring(source))
         TriggerClientEvent('dh_lib:client:testRequestAction', source, 'useItem', true)
         test_waitForAction = false
         TestHelper.SetResult("RegisterItem", true, "Item used")

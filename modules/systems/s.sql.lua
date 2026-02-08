@@ -47,3 +47,5 @@ end
 Core.SQL.AwaitUpdate = function(query, args)
     return MySQL.update.await(query, args)
 end
+
+LoadedSystems['sql'] = true

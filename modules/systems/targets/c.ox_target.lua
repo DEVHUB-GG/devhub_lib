@@ -136,4 +136,6 @@ CreateThread( function()
     Core.RemoveGlobalPlayerFromTarget = function(names)
         exports.ox_target:removeGlobalPlayer(names)
     end
+
+    LoadedSystems['targets'] = true
 end)

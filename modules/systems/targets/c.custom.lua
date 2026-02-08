@@ -105,4 +105,6 @@ CreateThread( function()
         ]]
         -- Implementation for removing global player target would go here
     end
+
+    LoadedSystems['targets'] = true
 end)

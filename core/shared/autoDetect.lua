@@ -61,6 +61,9 @@ INVENTORIES = {
     ["qs-inventory"] = {
         "qs-inventory",
     },
+    ["tgiann-inventory"] = {
+        "tgiann-inventory",
+    },
 }
 
 FUEL_RESOURCES = {
@@ -75,6 +78,9 @@ FUEL_RESOURCES = {
     },
     ['cd_fuel'] = {
         "cd_fuel",
+    },
+    ['rcore_fuel'] = {
+        "rcore_fuel",
     },
 }
 
@@ -207,7 +213,7 @@ if isAutoDetect(Shared.InventorySystem) then
         end
     end
     if not inventoryDetected then
-        print("^3devhub_lib:^1 Inventory System not detected. Please set it manually.\t^7 Inventory System was automatically set to: ^2custom^7")
+        print("^3devhub_lib:^1 Inventory System not detected.\t^7 Inventory System was automatically set to: ^2custom^7. You can edit ^3modules/inventories/custom/^7 to add your own inventory integration.")
         Shared.InventorySystem = "custom"
     end
 end

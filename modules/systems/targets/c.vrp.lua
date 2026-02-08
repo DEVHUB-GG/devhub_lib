@@ -162,4 +162,6 @@ CreateThread( function()
     Core.RemoveGlobalPlayerFromTarget = function(names)
         exports["target"]:RemoveGlobalPlayer(names)
     end
+
+    LoadedSystems['targets'] = true
 end)

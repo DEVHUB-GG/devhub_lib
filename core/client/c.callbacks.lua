@@ -17,3 +17,5 @@ RegisterNetEvent('dh_lib:client:serverCallback', function(requestId, ...)
 	Core.ServerCallbacks[requestId](...)
 	Core.ServerCallbacks[requestId] = nil
 end)
+
+LoadedSystems['callbacks'] = true

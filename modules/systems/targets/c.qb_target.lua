@@ -151,4 +151,6 @@ CreateThread( function()
     Core.RemoveGlobalPlayerFromTarget = function(names)
         exports['qb-target']:RemoveGlobalPlayer(names)
     end
+
+    LoadedSystems['targets'] = true
 end)

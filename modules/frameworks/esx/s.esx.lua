@@ -96,13 +96,13 @@ CreateThread(function()
     end
     
     RegisterNetEvent("esx:playerLoaded",function(source)
-        TriggerClientEvent("dh_lib:client:playerLoaded", source)
-        TriggerEvent("dh_lib:server:playerLoaded", source)
+        -- TriggerClientEvent("dh_lib:client:playerLoaded", source)
+        -- TriggerEvent("dh_lib:server:playerLoaded", source)
     end)
 
     RegisterNetEvent('esx:playerDropped', function(source, reason)
-        TriggerEvent("dh_lib:server:playerUnloaded", source)
-        TriggerClientEvent("dh_lib:client:playerUnloaded", source)
+        -- TriggerEvent("dh_lib:server:playerUnloaded", source)
+        -- TriggerClientEvent("dh_lib:client:playerUnloaded", source)
     end)
 
     AddEventHandler('esx:onAddInventoryItem', function(source, itemName, itemCount)
@@ -113,5 +113,5 @@ CreateThread(function()
         TriggerClientEvent("devhub_lib:itemCarry:removeItem:client", source, itemName)
     end)
 
-    Core.Loaded = true
+    LoadedSystems["framework"] = true
 end)

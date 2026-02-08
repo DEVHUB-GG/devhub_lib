@@ -19,7 +19,7 @@ local ClothingData = {
         ["bracelets"] = 7,
     }
 }  
- 
+
 local PreviousClothing = {}
 
 RegisterNetEvent("dh_lib:changeClothing:client", function(clothingConfig)
