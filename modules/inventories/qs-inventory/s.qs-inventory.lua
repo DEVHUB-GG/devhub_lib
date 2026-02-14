@@ -1,8 +1,8 @@
 if Shared.InventorySystem ~= "qs-inventory" then return end  
 local Items = exports['qs-inventory']:GetItemList()
-
+ 
 Core.RegisterItem = function(item, func)
-    exports['qs-inventory']:RegisterUsableItem(item, function(source, itemData)
+    exports['qs-inventory']:CreateUsableItem(item, function(source, itemData)
         func(source, itemData.slot, itemData.metadata or itemData.info or {})
     end)
 end
@@ -32,7 +32,7 @@ Core.GetItemData = function(itemName)
     if not itemData then return nil end
     return {
         label = itemData.label or itemName,
-        img = itemData.image or string.format("https://cfx-nui-qs-inventory/web/images/%s.png", itemName),
+        img = string.format("https://cfx-nui-qs-inventory/html/images/%s", itemData.image),
     }
 end
  

@@ -1,5 +1,5 @@
 if Shared.InventorySystem ~= "tgiann-inventory" then return end  
-local Items = exports['tgiann-inventory']:GetItemList()
+local Items = exports["tgiann-inventory"]:ItemsRaw()
 
 Core.GetItemData = function(itemName) 
     local itemData = Items[itemName]
@@ -7,7 +7,7 @@ Core.GetItemData = function(itemName)
     return { 
         name = itemName,
         label = itemData.label or itemName,
-        img = itemData.image or ('nui://inventory_images/images/%s.png'):format(itemName),
+        img = string.format("nui://inventory_images/images/%s", itemData.image),
     }
 end
 

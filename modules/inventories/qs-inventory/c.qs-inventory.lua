@@ -10,18 +10,16 @@ Core.GetItemData = function(itemName)
     }
 end
 
-RegisterNetEvent('onEquipWeapon', function(currentWeapon)
-    --TODO if you have this inventory and need help, open a ticket  
-
-    -- local metadata = data?.metadata
-    -- TriggerEvent("devhub_lib:client:currentWeapon", {
-    --     weapon = data.name,
-    --     metadata = metadata,
-    -- })
+RegisterNetEvent('weapons:client:SetCurrentWeapon', function(data)
+    if not data then 
+        TriggerEvent("devhub_lib:client:currentWeapon")
+        return
+    end
+    TriggerEvent("devhub_lib:client:currentWeapon", {
+        weapon = data.name,
+        metadata = data?.info,
+    })
 end)
 
-RegisterNetEvent('onUnEquipWeapon', function(currentWeapon)
-    TriggerEvent("devhub_lib:client:currentWeapon")
-end)
 
 LoadedSystems['inventory'] = true

@@ -19,6 +19,11 @@ TARGET_RESOURCES = {
     ['qb-target'] = "qb-target",
 }
 
+TARGET_ORDER = {
+    "ox_target",
+    "qb-target",
+}
+
 VEHICLE_KEYS_RESOURCES = {
     ['qb-vehiclekeys'] = {
         "qb-vehiclekeys",
@@ -64,6 +69,16 @@ INVENTORIES = {
     ["tgiann-inventory"] = {
         "tgiann-inventory",
     },
+}
+
+INVENTORIES_ORDER = {
+    "ak47_inventory",
+    "qs-inventory",
+    "tgiann-inventory",
+    "codem-inventory",
+    "core_inventory",
+    "ox_inventory",
+    "qb-inventory",
 }
 
 FUEL_RESOURCES = {
@@ -159,13 +174,16 @@ end
 
 if isAutoDetect(Shared.Target) then
     local targetDetected = false
-    for k, v in pairs(TARGET_RESOURCES) do
-        local status = GetResourceState(v)
-        if status == "started" then
-            Shared.Target = k
-            targetDetected = true
-            print("^3devhub_lib:^7 Target detected: ^2"..k.."^7")
-            break
+    for _, targetName in ipairs(TARGET_ORDER) do
+        local resource = TARGET_RESOURCES[targetName]
+        if resource then
+            local status = GetResourceState(resource)
+            if status == "started" then
+                Shared.Target = targetName
+                targetDetected = true
+                print("^3devhub_lib:^7 Target detected: ^2"..targetName.."^7")
+                break
+            end
         end
     end
     if not targetDetected then
@@ -198,14 +216,17 @@ if isAutoDetect(Shared.VehicleKeys) then
 end
 if isAutoDetect(Shared.InventorySystem) then
     local inventoryDetected = false
-    for k, v in pairs(INVENTORIES) do
-        for _, resource in pairs(v) do
-            local status = GetResourceState(resource)
-            if status == "started" then
-                Shared.InventorySystem = k
-                inventoryDetected = true
-                print("^3devhub_lib:^7 Inventory System detected: ^2"..k.."^7")
-                break
+    for _, invName in ipairs(INVENTORIES_ORDER) do
+        local resources = INVENTORIES[invName]
+        if resources then
+            for _, resource in pairs(resources) do
+                local status = GetResourceState(resource)
+                if status == "started" then
+                    Shared.InventorySystem = invName
+                    inventoryDetected = true
+                    print("^3devhub_lib:^7 Inventory System detected: ^2"..invName.."^7")
+                    break
+                end
             end
         end
         if inventoryDetected then

@@ -1,5 +1,5 @@
 if Shared.InventorySystem ~= "tgiann-inventory" then return end  
-local Items = exports['tgiann-inventory']:GetItemList()
+local Items = exports["tgiann-inventory"]:ItemsRaw()
 
 Core.RegisterItem = function(item, func)
     if Shared.Framework == "ESX" then 
@@ -41,13 +41,10 @@ end
 
 Core.GetItemData = function(itemName)
     local itemData = Items[itemName]
-    if not itemData then
-        itemData = exports['tgiann-inventory']:GetItemList(itemName)
-    end
     if not itemData then return nil end
     return {
         label = itemData.label or itemName,
-        img = itemData.image or string.format("nui://inventory_images/images/%s.png", itemName),
+        img = string.format("nui://inventory_images/images/%s", itemData.image),
     }
 end
 

@@ -1,13 +1,28 @@
 if Shared.InventorySystem ~= "ak47_inventory" then return end  
-
+local Items = exports['ak47_inventory']:Items()
 Core.RegisterItem = function(item, func)
-    exports['ak47_inventory']:RegisterUsableItem(item, function(source, itemData)
-        func(source, itemData.slot, itemData.info or {})
-    end)
+    if Shared.Framework == "ESX" then 
+        ESX.RegisterUsableItem(item, function(playerId)
+            func(playerId)
+        end)
+    elseif Shared.Framework == "QBCore" then
+        QBCore.Functions.CreateUseableItem(item, function(source, item)
+            func(source)
+        end)
+     elseif Shared.Framework == "QBOX" then
+        exports.qbx_core:CreateUseableItem(item, function(source, item)
+            func(source)
+        end)
+    end
 end
 
 Core.RegisterServerCallback('dh_lib:server:getItemData', function(source, cb, itemName)
     cb(Core.GetItemData(itemName))
+end)
+
+Core.RegisterServerCallback('dh_lib:server:getWeaponMetadata', function(source, cb, slot)
+    local metadata = Core.GetItemMetadata(source, slot)
+    cb(metadata)
 end)
 
 Core.GetAllItems = function(source)
@@ -27,11 +42,11 @@ Core.GetAllItems = function(source)
 end
 
 Core.GetItemData = function(itemName)
-    local itemData = exports['ak47_inventory']:Items(itemName)
+    local itemData = Items[itemName]
     if not itemData then return nil end
     return {
         label = itemData.label or itemName,
-        img = string.format("https://cfx-nui-ak47_inventory/html/img/%s.png", itemName),
+        img = string.format("https://cfx-nui-ak47_inventory/web/build/images/%s.png", itemName),
     }
 end
  
