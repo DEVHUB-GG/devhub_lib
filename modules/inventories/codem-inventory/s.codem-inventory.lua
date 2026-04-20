@@ -1,9 +1,19 @@
 if Shared.InventorySystem ~= "codem-inventory" then return end  
 
 Core.RegisterItem = function(item, func)
-    exports['codem-inventory']:RegisterUsableItem(item, function(source, itemData)
-        func(source, itemData.slot, itemData.metadata or itemData.info or {})
-    end)
+    if Shared.Framework == "ESX" then 
+        ESX.RegisterUsableItem(item, function(playerId)
+            func(playerId)
+        end)
+    elseif Shared.Framework == "QBCore" then
+        QBCore.Functions.CreateUseableItem(item, function(source, item)
+            func(source)
+        end)
+     elseif Shared.Framework == "QBOX" then
+        exports.qbx_core:CreateUseableItem(item, function(source, item)
+            func(source)
+        end)
+    end
 end
 
 Core.RegisterServerCallback('dh_lib:server:getItemData', function(source, cb, itemName)
@@ -27,10 +37,10 @@ Core.GetAllItems = function(source)
 end
 
 Core.GetItemData = function(itemName)
-    local itemData = exports['codem-inventory']:GetItemData(itemName)
+    local itemData = exports['codem-inventory']:GetItemLabel(itemName)
     if not itemData then return nil end
     return {
-        label = itemData.label or itemName,
+        label = itemData or itemName,
         img = string.format("https://cfx-nui-codem-inventory/html/img/%s.png", itemName),
     }
 end

@@ -221,6 +221,9 @@ local function _pointInPoly(point, poly)
     local gridPosY = y - minY
     local gridCellX = (gridPosX * gridDivisions) // size.x
     local gridCellY = (gridPosY * gridDivisions) // size.y
+    if gridCellX < 0 or gridCellY < 0 or gridCellX >= gridDivisions or gridCellY >= gridDivisions then
+      return _windingNumber(point, poly.points)
+    end
     local gridCellValue = grid[gridCellY + 1][gridCellX + 1]
     if gridCellValue == nil and poly.lazyGrid then
       gridCellValue = _isGridCellInsidePoly(gridCellX, gridCellY, poly)

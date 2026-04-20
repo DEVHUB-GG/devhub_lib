@@ -1,5 +1,5 @@
 if Shared.InventorySystem ~= "ak47_inventory" then return end  
-local Items = exports['ak47_inventory']:Items()
+local Items = nil
 Core.RegisterItem = function(item, func)
     if Shared.Framework == "ESX" then 
         ESX.RegisterUsableItem(item, function(playerId)
@@ -26,6 +26,9 @@ Core.RegisterServerCallback('dh_lib:server:getWeaponMetadata', function(source, 
 end)
 
 Core.GetAllItems = function(source)
+    if not Items then 
+        Items = exports['ak47_inventory']:Items()
+    end
     local playerItems = exports['ak47_inventory']:GetInventoryItems(source)
     if not playerItems then return {} end
     local items = {}
@@ -42,6 +45,9 @@ Core.GetAllItems = function(source)
 end
 
 Core.GetItemData = function(itemName)
+    if not Items then 
+        Items = exports['ak47_inventory']:Items()
+    end
     local itemData = Items[itemName]
     if not itemData then return nil end
     return {
