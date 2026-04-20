@@ -47,11 +47,11 @@ Core.AddItem = function(source, itemName, amount, metadata)
 end
 
 Core.CanCarry = function(source, item, amount)
-    return exports.ox_inventory:CanCarryItem(source, item, amount, metadata)
+    return exports['qb-inventory']:CanAddItem(source, item, amount)
 end
 
 Core.GetItemCount = function(source, item)
-    return exports.ox_inventory:GetItemCount(source, item)
+    return exports['qb-inventory']:GetItemCount(source, item)
 end
 
 LoadedSystems['inventory'] = true

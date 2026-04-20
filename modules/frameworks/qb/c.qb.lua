@@ -1,5 +1,5 @@
 if Shared.Framework ~= "QBCore" then return end
-   
+QBCore = exports['qb-core']:GetCoreObject()
 CreateThread( function()
     RegisterNetEvent("QBCore:Client:OnPlayerLoaded",function()
         TriggerEvent("dh_lib:client:playerLoaded")

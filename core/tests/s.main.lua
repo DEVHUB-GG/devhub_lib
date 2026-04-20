@@ -1,6 +1,16 @@
 if not Shared.CompatibilityTest then return end
 
 testResults = {
+    LoadedSystems_server_framework = { message = "LoadedSystems.framework is not true on server.", results = false, ignoreXPlayerWipe = true },
+    LoadedSystems_server_inventory = { message = "LoadedSystems.inventory is not true on server.", results = false, ignoreXPlayerWipe = true },
+    LoadedSystems_server_callbacks = { message = "LoadedSystems.callbacks is not true on server.", results = false, ignoreXPlayerWipe = true },
+    LoadedSystems_server_sql = { message = "LoadedSystems.sql is not true on server.", results = false, ignoreXPlayerWipe = true },
+    LoadedSystems_server_admin = { message = "LoadedSystems.admin is not true on server.", results = false, ignoreXPlayerWipe = true },
+    LoadedSystems_client_framework = { message = "LoadedSystems.framework is not true on client.", results = false, ignoreXPlayerWipe = true },
+    LoadedSystems_client_inventory = { message = "LoadedSystems.inventory is not true on client.", results = false, ignoreXPlayerWipe = true },
+    LoadedSystems_client_targets = { message = "LoadedSystems.targets is not true on client.", results = false, ignoreXPlayerWipe = true },
+    LoadedSystems_client_callbacks = { message = "LoadedSystems.callbacks is not true on client.", results = false, ignoreXPlayerWipe = true },
+    CoreLoaded_client = { message = "Core.Loaded is not true on client.", results = false, ignoreXPlayerWipe = true },
     playerLoadedClient = { message = "dh_lib:client:playerLoaded event not triggered.", results = false, ignoreXPlayerWipe = true },
     playerLoadedServer = { message = "dh_lib:server:playerLoaded event not triggered.", results = false, ignoreXPlayerWipe = true },
     playerUnloadedClient = { message = "dh_lib:client:playerUnloaded event not triggered.", results = false, ignoreXPlayerWipe = true },
@@ -168,6 +178,20 @@ RegisterNetEvent('dh_lib:server:startTest',function()
     print("^3DEVHUB:^7   VehicleFuel: ^5" .. tostring(Shared.VehicleFuel) .. "^7")
     print("^3DEVHUB:^7   InventorySystem: ^5" .. tostring(Shared.InventorySystem) .. "^7")
     print("^3DEVHUB:^7 ----------------------------")
+
+    testResults['LoadedSystems_server_framework'].results = LoadedSystems["framework"] == true
+    testResults['LoadedSystems_server_framework'].message = "LoadedSystems.framework = " .. tostring(LoadedSystems["framework"])
+    testResults['LoadedSystems_server_inventory'].results = LoadedSystems["inventory"] == true
+    testResults['LoadedSystems_server_inventory'].message = "LoadedSystems.inventory = " .. tostring(LoadedSystems["inventory"])
+    testResults['LoadedSystems_server_callbacks'].results = LoadedSystems["callbacks"] == true
+    testResults['LoadedSystems_server_callbacks'].message = "LoadedSystems.callbacks = " .. tostring(LoadedSystems["callbacks"])
+    testResults['LoadedSystems_server_sql'].results = LoadedSystems["sql"] == true
+    testResults['LoadedSystems_server_sql'].message = "LoadedSystems.sql = " .. tostring(LoadedSystems["sql"])
+    testResults['LoadedSystems_server_admin'].results = LoadedSystems["admin"] == true
+    testResults['LoadedSystems_server_admin'].message = "LoadedSystems.admin = " .. tostring(LoadedSystems["admin"])
+
+    TriggerClientEvent('dh_lib:client:test_checkLoadedSystems', source)
+    Wait(2000)
 
     showTestStatus(source, "TargetResource")
     TestHelper.RunTest("TargetResource", test_target)
