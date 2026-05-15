@@ -1,10 +1,11 @@
 if Shared.InventorySystem ~= "core_inventory" then return end  
-
+local allItems = exports['core_inventory']:getItemsList()
 Core.GetItemData = function(itemName) 
     -- TODO this inventory does not have a method to get item data directly
+    local data = allItems[itemName]
     return { 
         name = itemName,
-        label = itemName,
+        label = data?.label or itemName,
         img = ('nui://core_inventory/html/img/%s.png'):format(itemName),
     }
 end

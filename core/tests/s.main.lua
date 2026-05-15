@@ -169,6 +169,7 @@ end
 
 RegisterNetEvent('dh_lib:server:startTest',function()
     local source = source
+    Core.Notify(source, "Starting compatibility tests, check the server console for results.")
     print("^3DEVHUB:^7 Starting compatibility tests. It may take a while.")
     print("^3DEVHUB:^7 Resource name: ^5" .. GetCurrentResourceName() .. "^7")
     print("^3DEVHUB:^7 Current configuration:")

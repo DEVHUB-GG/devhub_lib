@@ -178,6 +178,8 @@ CreateThread(function()
         end
     end
 
+    LoadedSystems['targets'] = true
+
     while true do
         cachedPed.ped = PlayerPedId()
         cachedPed.coords = GetEntityCoords(cachedPed.ped)
@@ -407,8 +409,6 @@ CreateThread(function()
 
         Wait(threadShouldStart and 250 or 1000)
     end
-
-    LoadedSystems['targets'] = true
 end)
 
 function RemoveTarget(id)

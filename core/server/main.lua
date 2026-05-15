@@ -70,4 +70,7 @@ Citizen.CreateThread(function()
         end
         cb(itemsAmount)
     end)
+    print("^1----------------------------------------^7")
+    print("^3devhub_lib:^2  All server systems loaded Core.Loaded is ready^7")
+    print("^1----------------------------------------^7")
 end)

@@ -9,6 +9,14 @@ function test_sound()
     local testUrl = "https://upload.devhub.gg/dh_upload/sampleTest.ogg"
     
     -- Play sound locally with error handling
+    if GetResourceState('xsound') ~= 'started' then
+        testResults['PlaySoundLocally'].results = false
+        testResults['PlaySoundLocally'].message = "XSound resource is not started"
+        testResults['PlaySoundLocally'].manualCheckRequired = {
+            "XSound resource is not started. Please ensure xsound is installed and running for sound tests to work."
+        }
+        return
+    end
     local errorMessage, playError = TestHelper.Execute(function()
         Core.PlaySoundLocally(testUid, testUrl, 0.5, false)
     end)

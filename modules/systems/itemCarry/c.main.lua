@@ -105,6 +105,7 @@ ItemCarryAddItem = function(item)
     if animation == nil then 
         return 
     end
+    IsCarryingItem = true
     local obj = Core.SpawnObject(config.prop, playerCoords, nil, false)
     while not DoesEntityExist(obj) do
         Wait(100)
