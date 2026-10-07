@@ -17,6 +17,11 @@ Shared.VehicleKeys = "AUTO DETECT"
 -- Fuel system being used. Possible fuel systems: "AUTO DETECT", "LegacyFuel", "ps-fuel", "ox_fuel", "cd_fuel", "rcore_fuel", "custom"
 Shared.VehicleFuel = "AUTO DETECT"
 
+-- License system being used. Possible license systems: "AUTO DETECT", "devhub_licenses", "ESX", "QBCore", "QBOX", "VRP", "custom"
+-- AUTO DETECT picks devhub_licenses when it is running, and the framework's own licenses otherwise.
+-- Set this to your FRAMEWORK name to keep licenses in the framework even while devhub_licenses is installed.
+Shared.LicenseSystem = "AUTO DETECT"
+
 -- Inventory system being used. Possible inventory systems: "AUTO DETECT", "ox_inventory", "qb-inventory", "tgiann-inventory", "ak47_inventory", "codem-inventory", "core_inventory", "qs-inventory",  "custom"
 Shared.InventorySystem = "AUTO DETECT" 
 

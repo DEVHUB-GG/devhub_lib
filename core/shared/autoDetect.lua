@@ -47,6 +47,12 @@ VEHICLE_KEYS_RESOURCES = {
     },
 }
  
+LICENSE_RESOURCES = {
+    ['devhub_licenses'] = {
+        "devhub_licenses",
+    },
+}
+
 INVENTORIES = {
     ['ox_inventory'] = {
         "ox_inventory",
@@ -170,6 +176,48 @@ end
 
 if Shared.Framework == "VRP" then
     print("^3devhub_lib:^7 Before using ^1vRP^7 make sure to uncomment ^1@vrp/lib/utils.lua^7 in fxmanifest.lua !!!^7")
+end
+
+
+local function detectLicenseSystem()
+    for name, resources in pairs(LICENSE_RESOURCES) do
+        for _, resource in pairs(resources) do
+            local state = GetResourceState(resource)
+           
+            if state == "started" or state == "starting" then
+                return name, resource
+            end
+        end
+    end
+end
+
+local function licenseSystemOwning(resource)
+    for name, resources in pairs(LICENSE_RESOURCES) do
+        for _, candidate in pairs(resources) do
+            if candidate == resource then return name end
+        end
+    end
+end
+
+if isAutoDetect(Shared.LicenseSystem) then
+    local detected = detectLicenseSystem()
+
+    if detected then
+        Shared.LicenseSystem = detected
+        print("^3devhub_lib:^7 License System detected: ^2"..detected.."^7")
+    else
+        Shared.LicenseSystem = Shared.Framework
+        print("^3devhub_lib:^7 License System not started yet -- using the framework's own licenses for now: ^2"..Shared.Framework.."^7")
+    end
+
+    AddEventHandler('onResourceStart', function(resource)
+        local owner = licenseSystemOwning(resource)
+        if not owner or Shared.LicenseSystem == owner then return end
+
+        Shared.LicenseSystem = owner
+        print("^3devhub_lib:^7 License System detected: ^2"..owner.."^7 (it started after us)")
+        TriggerEvent('devhub_lib:licenseSystemChanged', owner)
+    end)
 end
 
 if isAutoDetect(Shared.Target) then

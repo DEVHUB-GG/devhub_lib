@@ -43,7 +43,7 @@ Core.RemoveItem = function(source, itemName, amount)
 end
 
 Core.AddItem = function(source, itemName, amount, metadata)
-    return exports['qb-inventory']:AddItem(source, itemName, amount or 1)
+    return exports['qb-inventory']:AddItem(source, itemName, amount or 1, nil, metadata)
 end
 
 Core.CanCarry = function(source, item, amount)
