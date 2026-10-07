@@ -9,42 +9,219 @@ local threadStarted = false
 local cachedPed = {
     ped = nil,
     coords = nil
-} 
+}
 
-CreateThread(function() 
+-- Entity and model targets used to be matched by scanning the object and ped pools once per
+-- model target, plus every target entity, on every pass: tens of ms in a single frame next to
+-- a busy area. Now each pass reads the pools once and asks the game for the model of handles it
+-- has not seen before only, and target entities are measured only when they were within
+-- CANDIDATE_RADIUS at the last scan.
+local CANDIDATE_RADIUS = 25.0       -- m, covers the 5 m target range plus the move below
+local CANDIDATE_MOVE_REFRESH = 8.0  -- m the player can move before target entities are rescanned
+local CANDIDATE_REFRESH_MS = 500    -- rescan for target entities that move on their own
+local MODEL_FULL_READ_MS = 2000     -- re-read every pooled model, in case a handle was reused
+-- Natives per frame before a scan yields. Kept high on purpose: a yield stretches the pass, and
+-- everything the pass finds is only shown once it ends.
+local SCAN_CHUNK = 2048
+local ENTITY_POOLS = { 'CObject', 'CPed' }
+
+local targetsVersion = 0            -- bumped whenever an entity or model target changes
+local localCandidates = {}          -- target entities within CANDIDATE_RADIUS at the last scan
+local localScanVersion = -1
+local localScanAt = 0
+local localScanCoords = nil
+local pooledModels = {}             -- pool handle -> model hash, carried between passes
+local pooledModelsReadAt = 0
+
+local function toVec3(value)
+    if value == nil then return nil end
+    if type(value) == "vector3" then return value end
+
+    local ok, x, y, z = pcall(function() return value.x, value.y, value.z end)
+    if not ok then return nil end
+
+    x, y, z = tonumber(x), tonumber(y), tonumber(z)
+    if x and y and z then return vector3(x + 0.0, y + 0.0, z + 0.0) end
+    return nil
+end
+
+-- Model names are hashed once at registration. Numeric hashes are kept as they are, folded
+-- to the signed range GetEntityModel returns.
+local function toModelHash(model)
+    if type(model) == "string" then return GetHashKey(model) end
+    local number = tonumber(model)
+    local hash = number and math.tointeger(number)
+    if not hash then return nil end
+    if hash > 0x7FFFFFFF then hash = hash - 0x100000000 end
+    return hash
+end
+
+local function callHandler(v, ...)
+    if not v.handler then return true end
+    local ok, res = pcall(v.handler, ...)
+    if not ok then return false end
+    return res
+end
+
+local GROUND_DROP_LIMIT = 3.0
+
+local function groundedCoords(x, y, z)
+    local found, groundZ = GetGroundZFor_3dCoord(x, y, z, 0)
+    if not found or (z - groundZ) > GROUND_DROP_LIMIT then
+        return vec3(x, y, z)
+    end
+    return vec3(x, y, groundZ + 0.05)
+end
+
+-- Target entities in registration order plus lookup sets of target entities and model hashes,
+-- rebuilt only after a target change.
+local setsVersion = -1
+local targetEntityList, targetEntities, targetModels, hasModelTargets = {}, {}, {}, false
+
+local function entityTargetSets()
+    if setsVersion ~= targetsVersion then
+        local list, entities, models, anyModel = {}, {}, {}, false
+        for k, v in pairs(modelTargets) do
+            if k ~= "_prevEntities" and k ~= "_entityStarted" then
+                if v.isLocalEntity and v.entity then
+                    if not entities[v.entity] then
+                        entities[v.entity] = true
+                        list[#list + 1] = v.entity
+                    end
+                elseif v.modelHash then
+                    models[v.modelHash] = true
+                    anyModel = true
+                end
+            end
+        end
+        targetEntityList, targetEntities, targetModels, hasModelTargets = list, entities, models, anyModel
+        setsVersion = targetsVersion
+    end
+    return targetEntityList, targetEntities, targetModels, hasModelTargets
+end
+
+local function scanTargetEntities(origin)
+    local version = targetsVersion
+    local list = entityTargetSets()
+    local found, natives = {}, 0
+    for i = 1, #list do
+        local entity = list[i]
+        if DoesEntityExist(entity) and #(origin - GetEntityCoords(entity)) <= CANDIDATE_RADIUS then
+            found[#found + 1] = entity
+        end
+        natives = natives + 2
+        if natives >= SCAN_CHUNK then
+            natives = 0
+            Wait(0)
+        end
+    end
+    localCandidates = found
+    localScanVersion = version
+    localScanAt = GetGameTimer()
+    localScanCoords = origin
+end
+
+-- Closest pooled object or ped whose model has a model target, within 5 m of origin. Only
+-- handles missing from the previous pass are asked for their model, unless a full re-read is
+-- due. The pools are snapshots and a re-read yields, so a handle can be gone by the time it is
+-- read: GetEntityModel returns 0 for it, which never matches.
+local function closestModelEntity(origin, models, closestEntity, closestDist)
+    local now = GetGameTimer()
+    local fullRead = now - pooledModelsReadAt >= MODEL_FULL_READ_MS
+    local known, seen, natives = pooledModels, {}, 0
+    for p = 1, #ENTITY_POOLS do
+        local pool = GetGamePool(ENTITY_POOLS[p])
+        for i = 1, #pool do
+            local entity = pool[i]
+            local model = not fullRead and known[entity] or nil
+            -- A cached hit is confirmed against the game, so a handle reused by another entity
+            -- cannot win with the model of the entity that held it before.
+            if model and models[model] then model = nil end
+            if not model then
+                model = GetEntityModel(entity)
+                natives = natives + 1
+            end
+            seen[entity] = model
+            if models[model] then
+                local distance = #(origin - GetEntityCoords(entity))
+                natives = natives + 1
+                if distance < closestDist and distance < 5.0 then
+                    closestDist = distance
+                    closestEntity = entity
+                end
+            end
+            if natives >= SCAN_CHUNK then
+                natives = 0
+                Wait(0)
+            end
+        end
+    end
+    pooledModels = seen
+    if fullRead then pooledModelsReadAt = now end
+    return closestEntity, closestDist
+end
+
+CreateThread(function()
     Core.AddModelToTarget = function(model, data)
         table.insert(modelTargets, {
             model = model,
+            modelHash = toModelHash(model),
             event = data.event,
             label = data.label,
             handler = data.handler,
+            name = data.name,
             resource = GetInvokingResource(),
         })
+        targetsVersion = targetsVersion + 1
+    end
+
+    Core.RemoveModelFromTarget = function(model, names)
+        local modelHash = toModelHash(model)
+        if not modelHash then return end
+        local tableToRemove = {}
+        for k, v in pairs(modelTargets) do
+            if not v.isLocalEntity and v.modelHash == modelHash then
+                if not names or (type(names) == "table" and lib.table.contains(names, v.name)) or names == v.name then
+                    RemoveTarget(k + 10000)
+                    table.insert(tableToRemove, k)
+                end
+            end
+        end
+        for i = #tableToRemove, 1, -1 do
+            table.remove(modelTargets, tableToRemove[i])
+        end
+        if #tableToRemove > 0 then
+            targetsVersion = targetsVersion + 1
+        end
     end
 
     Core.AddCoordsToTarget = function(coords, data)
-        local options = {}
+        local invoker = GetInvokingResource()
+
+        local pos = toVec3(coords)
+        if not pos then return end
+
         if data and data[1] then
             for _, v in pairs(data) do
                 table.insert(coordsTargets, {
-                    coords = coords,
+                    coords = pos,
                     radius = v.radius or 2.0,
                     event = v.event,
                     label = v.label,
                     handler = v.handler,
                     name = v.name,
-                    resource = GetInvokingResource(),
+                    resource = invoker,
                 })
             end
         else
             table.insert(coordsTargets, {
-                coords = coords,
+                coords = pos,
                 radius = data.radius or 2.0,
                 event = data.event,
                 label = data.label,
                 handler = data.handler,
                 name = data.name,
-                resource = GetInvokingResource(),
+                resource = invoker,
             })
         end
     end
@@ -83,6 +260,10 @@ CreateThread(function()
                 isLocalEntity = true,
             })
         end
+        targetsVersion = targetsVersion + 1
+        -- Measured from the next pass on, without waiting for the rescan the version bump asks
+        -- for. The pass filters it by target, existence and distance anyway.
+        localCandidates[#localCandidates + 1] = entity
     end
 
     Core.RemoveLocalEntityFromTarget = function(entity, names)
@@ -97,6 +278,9 @@ CreateThread(function()
         end
         for i = #tableToRemove, 1, -1 do
             table.remove(modelTargets, tableToRemove[i])
+        end
+        if #tableToRemove > 0 then
+            targetsVersion = targetsVersion + 1
         end
     end
 
@@ -180,31 +364,48 @@ CreateThread(function()
 
     LoadedSystems['targets'] = true
 
+    local function processCoordsTarget(k, v)
+        local distance = #(cachedPed.coords - v.coords)
+        if not v.started and distance < v.radius + 3.0 and callHandler(v) then
+            v.started = true
+            table.insert(targetsThread, {
+                event = v.event,
+                label = v.label,
+                coords = groundedCoords(v.coords.x, v.coords.y, v.coords.z),
+                radius = v.radius,
+                id = k
+            })
+            CreateThread(TargetThread)
+            return true
+        elseif v.started and distance < v.radius + 3.0 then
+            return true
+        elseif v.started and distance > v.radius + 3.0 then
+            v.started = false
+            RemoveTarget(k)
+        end
+        return false
+    end
+
+    local lastPassWasRetry = false
+
     while true do
         cachedPed.ped = PlayerPedId()
         cachedPed.coords = GetEntityCoords(cachedPed.ped)
         local threadShouldStart = false
 
         for _k, v in pairs(coordsTargets) do
-            local k = tostring(_k)
-            local distance = #(cachedPed.coords - v.coords)
-            if not v.started and distance < v.radius + 3.0 and (not v.handler or v.handler()) then
-                threadShouldStart = true 
-                v.started = true
-                local _, groundZ = GetGroundZFor_3dCoord(v.coords.x, v.coords.y, v.coords.z, 0)
-                table.insert(targetsThread, {
-                    event = v.event,
-                    label = v.label,
-                    coords = vec3(v.coords.x, v.coords.y, groundZ + 0.05),
-                    radius = v.radius,
-                    id = k
-                })
-                CreateThread(TargetThread)
-            elseif v.started and distance < v.radius + 3.0 then
-                threadShouldStart = true
-            elseif v.started and distance > v.radius + 3.0 then
-                v.started = false
-                RemoveTarget(k)
+            if not v.broken then
+                local k = tostring(_k)
+                local ok, res = pcall(processCoordsTarget, k, v)
+                if ok then
+                    if res then threadShouldStart = true end
+                else
+                    v.broken = true
+                    if v.started then
+                        v.started = false
+                        pcall(RemoveTarget, k)
+                    end
+                end
             end
             Wait(1)
         end
@@ -237,64 +438,55 @@ CreateThread(function()
             end
         end
 
-        for k, v in pairs(modelTargets) do
-            if k == "_prevEntities" or k == "_entityStarted" then goto continue end
-            
-            if v.isLocalEntity and v.entity then
-                if DoesEntityExist(v.entity) then
-                    local entityCoords = GetEntityCoords(v.entity)
-                    local distance = #(cachedPed.coords - entityCoords)
+        local passStartedAt = GetGameTimer()
+        -- At most one retry in a row, so a target that keeps failing the check below cannot turn
+        -- the loop into a per-frame scan.
+        local retryPass = false
+        local mayRetry = not lastPassWasRetry
+
+        if #modelTargets > 0 then
+            local origin = cachedPed.coords
+            if localScanVersion ~= targetsVersion or not localScanCoords
+                or #(origin - localScanCoords) > CANDIDATE_MOVE_REFRESH
+                or GetGameTimer() - localScanAt >= CANDIDATE_REFRESH_MS then
+                scanTargetEntities(origin)
+            end
+
+            local previousClosest, previousDist, previousIsGlobal = closestEntity, closestDist, isGlobalPlayer
+            local _, entities, models, anyModel = entityTargetSets()
+            for i = 1, #localCandidates do
+                local entity = localCandidates[i]
+                if entities[entity] and DoesEntityExist(entity) then
+                    local distance = #(origin - GetEntityCoords(entity))
                     if distance < closestDist and distance < 5.0 then
                         closestDist = distance
-                        closestEntity = v.entity
-                        isGlobalPlayer = false
-                    end
-                end
-            elseif v.model then
-                local model = GetHashKey(v.model)
-                local peds = GetGamePool('CPed')
-                local objects = GetGamePool('CObject')
-
-                for i = 1, #objects do
-                    local object = objects[i]
-                    if DoesEntityExist(object) then
-                        local objectModel = GetEntityModel(object)
-                        if objectModel == model then
-                            local objectCoords = GetEntityCoords(object)
-                            local distance = #(cachedPed.coords - objectCoords)
-                            if distance < closestDist and distance < 5.0 then
-                                closestDist = distance
-                                closestEntity = object
-                                isGlobalPlayer = false
-                            end
-                        end
-                    end
-                end
-
-                for i = 1, #peds do
-                    local ped = peds[i]
-                    if DoesEntityExist(ped) then
-                        local pedModel = GetEntityModel(ped)
-                        if pedModel == model then
-                            local pedCoords = GetEntityCoords(ped)
-                            local distance = #(cachedPed.coords - pedCoords)
-                            if distance < closestDist and distance < 5.0 then
-                                closestDist = distance
-                                closestEntity = ped
-                                isGlobalPlayer = false
-                            end
-                        end
+                        closestEntity = entity
                     end
                 end
             end
-            
-            ::continue::
+            if anyModel then
+                closestEntity, closestDist = closestModelEntity(origin, models, closestEntity, closestDist)
+            end
+
+            if closestEntity ~= previousClosest then
+                isGlobalPlayer = false
+                -- The scans can yield, so the winner is checked again against the current targets.
+                local _, entitiesNow, modelsNow = entityTargetSets()
+                if not DoesEntityExist(closestEntity)
+                    or not (entitiesNow[closestEntity] or modelsNow[GetEntityModel(closestEntity)]) then
+                    -- The winner went away while the scans were yielding. Drop it and run the
+                    -- pass again on the next frame, so a valid target behind it is not hidden
+                    -- for a whole wait.
+                    pooledModels[closestEntity] = nil
+                    closestEntity, closestDist, isGlobalPlayer = previousClosest, previousDist, previousIsGlobal
+                    retryPass = mayRetry
+                end
+            end
         end
 
         if closestEntity then
             local entityCoords = GetEntityCoords(closestEntity)
-            local _, groundZ = GetGroundZFor_3dCoord(entityCoords.x, entityCoords.y, entityCoords.z, 0)
-            local targetCoords = vec3(entityCoords.x, entityCoords.y, groundZ + 0.05)
+            local targetCoords = groundedCoords(entityCoords.x, entityCoords.y, entityCoords.z)
             
             local prevEntity = modelTargets._prevEntities["_closest"]
             if prevEntity ~= closestEntity then
@@ -320,7 +512,7 @@ CreateThread(function()
             if isGlobalPlayer then
                 for k, v in pairs(globalPlayerTargets) do
                     local id = "globalplayer_" .. k
-                    if not v.started and (not v.handler or v.handler(closestEntity, closestDist)) then
+                    if not v.started and callHandler(v, closestEntity, closestDist) then
                         threadShouldStart = true
                         v.started = true
                         table.insert(targetsThread, {
@@ -345,13 +537,14 @@ CreateThread(function()
                 end
             end
             
+            local closestModel = GetEntityModel(closestEntity)
             for k, v in pairs(modelTargets) do
                 if k == "_prevEntities" or k == "_entityStarted" then goto continue2 end
                 
                 local isMatch = false
                 if v.isLocalEntity and v.entity == closestEntity then
                     isMatch = true
-                elseif v.model and GetEntityModel(closestEntity) == GetHashKey(v.model) then
+                elseif v.modelHash and v.modelHash == closestModel then
                     isMatch = true
                 end
                 
@@ -359,7 +552,7 @@ CreateThread(function()
                     local numericK = tonumber(k) or k
                     local id = (type(numericK) == "number" and numericK + 10000) or tostring(numericK) .. "_model"
                     
-                    if not v.started and (not v.handler or v.handler(closestEntity, closestDist)) then
+                    if not v.started and callHandler(v, closestEntity, closestDist) then
                         threadShouldStart = true
                         v.started = true
                         table.insert(targetsThread, {
@@ -407,7 +600,14 @@ CreateThread(function()
             threadStarted = false
         end
 
-        Wait(threadShouldStart and 250 or 1000)
+        -- The scans above can span several frames, and that time counts towards the wait, so a
+        -- long pass does not push the next one back.
+        lastPassWasRetry = retryPass
+        if retryPass then
+            Wait(0)
+        else
+            Wait(math.max(0, (threadShouldStart and 250 or 1000) - (GetGameTimer() - passStartedAt)))
+        end
     end
 end)
 
@@ -519,6 +719,9 @@ AddEventHandler("onResourceStop", function(resourceName)
     end
     for i = #tableToRemove, 1, -1 do
         table.remove(modelTargets, tableToRemove[i])
+    end
+    if #tableToRemove > 0 then
+        targetsVersion = targetsVersion + 1
     end
 end)
  

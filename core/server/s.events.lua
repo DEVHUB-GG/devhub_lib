@@ -26,7 +26,7 @@ end)
 RegisterNetEvent("dh_lib:server:clientReady", function()
     local src = source
     CreateThread(function()
-        Wait(10000) 
+        Wait(10000 + math.random(0, 8000))
 
         while true do
             if dh_loadedPlayers[src] then

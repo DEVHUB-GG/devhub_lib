@@ -14,6 +14,9 @@ CreateThread( function()
             distance = 2.5,
         })
     end
+    Core.RemoveModelFromTarget = function(model, names)
+        exports['qb-target']:RemoveTargetModel({model}, names)
+    end
     Core.AddCoordsToTarget = function(coords, data)
         local options = {}
         if data and data[1] then

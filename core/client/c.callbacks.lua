@@ -2,7 +2,6 @@ Core.ServerCallbacks, Core.CurrentRequestId = {}, 0
  
 Core.TriggerServerCallback = function(name, cb, ...)
 	Core.ServerCallbacks[Core.CurrentRequestId] = cb
-
 	TriggerServerEvent('dh_lib:server:triggerServerCallback', name, Core.CurrentRequestId, ...)
 
 	if Core.CurrentRequestId < 65535 then

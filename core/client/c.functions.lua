@@ -128,8 +128,6 @@ function Core.SpawnVehicle(modelName, coords, heading, cb, _networked, fuel)
         SetVehicleIsStolen(vehicle, false)
         SetVehicleIsWanted(vehicle, false)
         SetVehRadioStation(vehicle, 'OFF')
-        local plate = GetVehicleNumberPlateText(vehicle) 
-        Core.AddVehicleKeys(plate, vehicle)
         Core.SetVehicleFuel(vehicle, fuel or 100.0)
         RequestCollisionAtCoord(coords.x, coords.y, coords.z)
 		while not HasCollisionLoadedAroundEntity(vehicle) do
@@ -139,6 +137,9 @@ function Core.SpawnVehicle(modelName, coords, heading, cb, _networked, fuel)
 		if cb ~= nil then
 			cb(vehicle)
 		end
+        if DoesEntityExist(vehicle) then
+            Core.AddVehicleKeys(GetVehicleNumberPlateText(vehicle), vehicle)
+        end
 	end)
 end 
 
@@ -253,12 +254,15 @@ end
 
 local progressbarCb = nil
 local progressbarBusy = false
+local progressbarClosed = false
 function Core.ShowProgressbar(data, cb)
     if not CustomUi.ShowProgressbar(data, cb) then
         if progressbarBusy then print("Progressbar is busy") return end
-        progressbarBusy = true
         local duration = data?.duration --@required in ms
         if not duration then print("Duration is required for progressbar") return end
+        progressbarBusy = true
+        progressbarCb = nil -- clear any stale completion from a prior/orphaned bar so we wait fresh
+        progressbarClosed = false
         -- placement: low, medium, high
         local placement = data?.placement or CustomUi.ProgressbarPlacement
         local text = data?.text or "Loading..."
@@ -270,7 +274,7 @@ function Core.ShowProgressbar(data, cb)
             duration = duration
         })
         if canStop then
-            while progressbarCb == nil do
+            while progressbarCb == nil and not progressbarClosed do
                 if IsControlJustPressed(0, 73) then
                     SendNUIMessage({
                         type = "progressbar",
@@ -286,16 +290,29 @@ function Core.ShowProgressbar(data, cb)
                 Wait(1)
             end
         else
-            while progressbarCb == nil do 
+            while progressbarCb == nil and not progressbarClosed do
                 Wait(50)
             end
+        end
+        -- Core.CloseProgressbar() aborted the bar mid-run: the NUI never posts
+        -- progressbarResult after a close, so report a failed run here instead of
+        -- waiting on progressbarCb forever
+        if progressbarClosed then
+            progressbarClosed = false
+            progressbarCb = nil
+            progressbarBusy = false
+            if cb then
+                cb(false)
+                return
+            end
+            return false
         end
         local temp = progressbarCb
         progressbarCb = nil
         progressbarBusy = false
-        if cb then 
+        if cb then
             cb(temp)
-        else 
+        else
             return temp
         end
     end
@@ -308,6 +325,9 @@ end)
 
 function Core.CloseProgressbar()
     if not CustomUi.CloseProgressbar() then
+        if progressbarBusy then
+            progressbarClosed = true -- unblocks the wait loop in Core.ShowProgressbar, its callback fires with false
+        end
         SendNUIMessage({
             type = "progressbar",
             close = true

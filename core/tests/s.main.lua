@@ -54,6 +54,11 @@ testResults = {
     SqlAction = { message = "", results = false, ignoreXPlayerWipe = true },
     SqlActionAwait = { message = "", results = false, ignoreXPlayerWipe = true },
     RegisterItem = { message = "Item was not used in time.", results = false, ignoreXPlayerWipe = true },
+    LicenseSystem = { message = "", results = false, ignoreXPlayerWipe = true },
+    GetLicenses = { message = "", results = false },
+    SetLicense = { message = "", results = false },
+    HasLicense = { message = "", results = false },
+    RemoveLicense = { message = "", results = false },
 }
 
 print("^3DEVHUB:^7 Compatibility tests enabled, type /dh_startTest to start the test.")
@@ -100,6 +105,7 @@ local function saveTestResultsToFile(passed, failed, actions, tips, filePaths)
     file:write("  VehicleKeys:     " .. tostring(Shared.VehicleKeys) .. "\n")
     file:write("  VehicleFuel:     " .. tostring(Shared.VehicleFuel) .. "\n")
     file:write("  InventorySystem: " .. tostring(Shared.InventorySystem) .. "\n")
+    file:write("  LicenseSystem:   " .. tostring(Shared.LicenseSystem) .. "\n")
     file:write("\n")
     
     -- Summary
@@ -178,6 +184,7 @@ RegisterNetEvent('dh_lib:server:startTest',function()
     print("^3DEVHUB:^7   VehicleKeys: ^5" .. tostring(Shared.VehicleKeys) .. "^7")
     print("^3DEVHUB:^7   VehicleFuel: ^5" .. tostring(Shared.VehicleFuel) .. "^7")
     print("^3DEVHUB:^7   InventorySystem: ^5" .. tostring(Shared.InventorySystem) .. "^7")
+    print("^3DEVHUB:^7   LicenseSystem: ^5" .. tostring(Shared.LicenseSystem) .. "^7")
     print("^3DEVHUB:^7 ----------------------------")
 
     testResults['LoadedSystems_server_framework'].results = LoadedSystems["framework"] == true
@@ -217,6 +224,8 @@ RegisterNetEvent('dh_lib:server:startTest',function()
         TestHelper.RunTest("CanCarry", test_item, source)
         showTestStatus(source, "User Functions")
         TestHelper.RunTest("GetJob", test_user, source)
+        showTestStatus(source, "License Functions")
+        TestHelper.RunTest("LicenseSystem", test_license, source)
     end
     Wait(500)
     showTestStatus(source, false)
@@ -317,6 +326,11 @@ RegisterNetEvent('dh_lib:server:startTest',function()
         SqlAction = "modules/systems/s.sql.lua",
         SqlActionAwait = "modules/systems/s.sql.lua",
         RegisterItem = "modules/inventories/"..inventoryLower.."/s."..inventoryLower..".lua",
+        LicenseSystem = "config.lua (Shared.LicenseSystem setting)",
+        GetLicenses = "modules/systems/s.licenses.lua",
+        SetLicense = "modules/systems/s.licenses.lua",
+        HasLicense = "modules/systems/s.licenses.lua",
+        RemoveLicense = "modules/systems/s.licenses.lua",
     }
     
     if amountOfFailedTests > 0 then

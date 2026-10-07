@@ -15,11 +15,13 @@ FRAMEWORK_RESOURCES = { -- some framework like qbox uses provide to imitate othe
 }
 
 TARGET_RESOURCES = {
+    ['ak47_target'] = "ak47_target", -- must be checked before ox_target/qb-target: ak47_target provides both
     ['ox_target'] = "ox_target",
     ['qb-target'] = "qb-target",
 }
 
 TARGET_ORDER = {
+    "ak47_target",
     "ox_target",
     "qb-target",
 }

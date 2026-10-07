@@ -5,11 +5,22 @@ CreateThread(function()
     Wait(5000)
     ESX = exports["es_extended"]:getSharedObject()
 
+    local identifierCache = {}
+
     Core.GetIdentifier = function(source)
+        local key = tonumber(source) or source
+        local cached = identifierCache[key]
+        if cached ~= nil then return cached end
         local xPlayer = ESX.GetPlayerFromId(source)
         if not xPlayer then return false end
+        identifierCache[key] = xPlayer.identifier
         return xPlayer.identifier
     end
+
+    AddEventHandler('playerDropped', function()
+        local src = source
+        identifierCache[tonumber(src) or src] = nil
+    end)
 
     Core.GetCash = function(source)
         local xPlayer = ESX.GetPlayerFromId(source)
@@ -96,6 +107,11 @@ CreateThread(function()
     end
     
     RegisterNetEvent("esx:playerLoaded",function(source)
+        -- A character switch reuses the same server id with a different identifier, and
+        -- multicharacter resources do not always drop the player in between. The cached
+        -- value has to go first, before anything downstream asks for it again, otherwise
+        -- the new character is served the previous one's identifier.
+        identifierCache[tonumber(source) or source] = nil
         TriggerClientEvent("dh_lib:client:playerLoaded", source)
         TriggerEvent("dh_lib:server:playerLoaded", source)
     end)

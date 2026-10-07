@@ -13,6 +13,16 @@ CreateThread( function()
         ]]
     end
 
+    Core.RemoveModelFromTarget = function(model, names)
+        --[[
+            This function removes a target from a model.
+            It contains the following data properties:
+            - @model: The model name or hash to remove the target from
+            - @names: The name(s) of the options to remove, all options when nil
+        ]]
+        -- Implementation for removing model target would go here
+    end
+
     Core.AddCoordsToTarget = function(coords, data)
         --[[
             This function adds a spherical target zone at specified coordinates.

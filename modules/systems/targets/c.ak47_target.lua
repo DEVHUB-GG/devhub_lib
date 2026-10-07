@@ -1,75 +1,51 @@
-if Shared.Target ~= "vrp" then return end 
-CreateThread( function() 
-
+if Shared.Target ~= "ak47_target" then return end
+CreateThread( function()
     Core.AddModelToTarget = function(model, data)
-        --[[
-            This file defines a custom target for the DH framework.
-            It contains the following data properties:
-            - @data.name: The unique identifier for the target.
-            - @data.event: The event that triggers the target.
-            - @data.icon: The icon to display for the target (using FontAwesome).
-            - @data.label: The label to display on the target.
-            - @data.handler: The function to call when the target is interacted with.
-        ]]
-        exports["target"]:AddTargetModel(model, {
-            options = {
-                {
-                    event = data.event,
-				    label = data.label,
-				    tunnel = "client"  
-                }
-            },
-            Distance = 1.5
+        exports.ak47_target:addModel(model, {
+            name = data.name,
+            event = data.event,
+            icon = data.icon,
+            label = data.label,
+            canInteract = data.handler
         })
     end
-
     Core.RemoveModelFromTarget = function(model, names)
-        exports["target"]:RemoveTargetModel(model, names)
+        exports.ak47_target:removeModel(model, names)
     end
-
     Core.AddCoordsToTarget = function(coords, data)
-        --[[
-            This function adds a spherical target zone at specified coordinates.
-            It contains the following data properties:
-            - @coords: Vector3 coordinates where to place the target zone
-            - @data.name: The unique identifier for the target
-            - @data.event: The event that triggers the target
-            - @data.icon: The icon to display for the target (using FontAwesome)
-            - @data.label: The label to display on the target
-            - @data.handler: The function to call when the target is interacted with
-            - @data.radius: The radius of the sphere zone
-        ]]
-        -- Implementation for custom target system would go here
         local options = {}
         if data and data[1] then
             for _, v in pairs(data) do
                 options[#options + 1] = {
                     event = v.event,
+                    icon = v.icon,
                     label = v.label,
-                    tunnel = "client",
+                    canInteract = v.handler,
                     name = v.name,
+                    radius = v.radius,
                 }
             end
-        else 
+        else
             options = {
                 {
                     event = data.event,
+                    icon = data.icon,
                     label = data.label,
-                    tunnel = "client",
+                    canInteract = data.handler,
                     name = data.name,
+                    radius = data.radius,
                 }
             }
         end
-        exports["target"]:AddCircleZone(options[1].name, coords.xyz, 0.5, {
+        exports.ak47_target:addSphereZone({
+            coords = coords,
+            radius = options[1].radius or 2.0,
             name = options[1].name,
-            heading = 0.0
-        }, {
-            Distance = 1.5,
             options = options
         })
     end
     Core.RemoveCoordsFromTarget = function(name)
-        exports["target"]:RemoveZone(name)
+        exports.ak47_target:removeZone(name)
     end
 
     Core.AddLocalEntityToTarget = function(entity, data)
@@ -78,8 +54,9 @@ CreateThread( function()
             for _, v in pairs(data) do
                 options[#options + 1] = {
                     event = v.event,
+                    icon = v.icon,
                     label = v.label,
-                    tunnel = "client",
+                    canInteract = v.handler,
                     name = v.name,
                 }
             end
@@ -87,20 +64,18 @@ CreateThread( function()
             options = {
                 {
                     event = data.event,
+                    icon = data.icon,
                     label = data.label,
-                    tunnel = "client",
+                    canInteract = data.handler,
                     name = data.name,
                 }
             }
         end
-        exports["target"]:AddTargetEntity(entity, {
-            options = options,
-            Distance = 1.5,
-        })
+        exports.ak47_target:addLocalEntity(entity, options)
     end
 
     Core.RemoveLocalEntityFromTarget = function(entity, names)
-        exports["target"]:RemoveTargetEntity(entity, names)
+        exports.ak47_target:removeLocalEntity(entity, names)
     end
 
     Core.AddGlobalVehicleToTarget = function(data)
@@ -109,8 +84,9 @@ CreateThread( function()
             for _, v in pairs(data) do
                 options[#options + 1] = {
                     event = v.event,
+                    icon = v.icon,
                     label = v.label,
-                    tunnel = "client",
+                    canInteract = v.handler,
                     name = v.name,
                     bones = v.bones,
                 }
@@ -119,21 +95,19 @@ CreateThread( function()
             options = {
                 {
                     event = data.event,
+                    icon = data.icon,
                     label = data.label,
-                    tunnel = "client",
+                    canInteract = data.handler,
                     name = data.name,
                     bones = data.bones,
                 }
             }
         end
-        exports["target"]:AddGlobalVehicle({
-            options = options,
-            Distance = 1.5,
-        })
+        exports.ak47_target:addGlobalVehicle(options)
     end
 
     Core.RemoveGlobalVehicleFromTarget = function(names)
-        exports["target"]:RemoveGlobalVehicle(names)
+        exports.ak47_target:removeGlobalVehicle(names)
     end
 
     Core.AddGlobalPlayerToTarget = function(data)
@@ -142,8 +116,9 @@ CreateThread( function()
             for _, v in pairs(data) do
                 options[#options + 1] = {
                     event = v.event,
+                    icon = v.icon,
                     label = v.label,
-                    tunnel = "client",
+                    canInteract = v.handler,
                     name = v.name,
                 }
             end
@@ -151,20 +126,18 @@ CreateThread( function()
             options = {
                 {
                     event = data.event,
+                    icon = data.icon,
                     label = data.label,
-                    tunnel = "client",
+                    canInteract = data.handler,
                     name = data.name,
                 }
             }
         end
-        exports["target"]:AddGlobalPlayer({
-            options = options,
-            Distance = 1.5,
-        })
+        exports.ak47_target:addGlobalPlayer(options)
     end
 
     Core.RemoveGlobalPlayerFromTarget = function(names)
-        exports["target"]:RemoveGlobalPlayer(names)
+        exports.ak47_target:removeGlobalPlayer(names)
     end
 
     LoadedSystems['targets'] = true

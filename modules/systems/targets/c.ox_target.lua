@@ -9,6 +9,9 @@ CreateThread( function()
             canInteract = data.handler
         })
     end
+    Core.RemoveModelFromTarget = function(model, names)
+        exports.ox_target:removeModel(model, names)
+    end
     Core.AddCoordsToTarget = function(coords, data)
         local options = {}
         if data and data[1] then
